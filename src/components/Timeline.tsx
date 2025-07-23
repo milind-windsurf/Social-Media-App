@@ -1,12 +1,13 @@
 'use client';
 
+import React from 'react';
 import { usePosts } from '@/context/PostsContext';
 import { Post } from './Post';
 
 /**
  * Timeline component that displays all posts in chronological order
  */
-export const Timeline = () => {
+export const Timeline = (): JSX.Element => {
   const { posts } = usePosts();
 
   return (
