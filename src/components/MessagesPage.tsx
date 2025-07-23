@@ -1,19 +1,18 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { Conversation, Message } from '@/types';
 
 /**
  * MessagesPage component that displays user conversations and messages
  * This component shows a list of conversations on the left and the selected
  * conversation messages on the right, with the ability to send new messages.
- * 
- * @returns {JSX.Element} The messages page UI
  */
-export function MessagesPage() {
-  const [conversations, setConversations] = useState([]);
-  const [activeConversation, setActiveConversation] = useState(null);
-  const [message, setMessage] = useState('');
-  const [loading, setLoading] = useState(true);
+export function MessagesPage(): JSX.Element {
+  const [conversations, setConversations] = useState<Conversation[]>([]);
+  const [activeConversation, setActiveConversation] = useState<Conversation | null>(null);
+  const [message, setMessage] = useState<string>('');
+  const [loading, setLoading] = useState<boolean>(true);
 
   /**
    * Effect hook to load conversations data
@@ -23,7 +22,7 @@ export function MessagesPage() {
     // Simulate API call with timeout
     const timer = setTimeout(() => {
       // Mock conversations data
-      const mockConversations = [
+      const mockConversations: Conversation[] = [
         {
           id: 1,
           user: { 
@@ -37,7 +36,8 @@ export function MessagesPage() {
             timestamp: new Date(Date.now() - 1000 * 60 * 15).toISOString(), // 15 minutes ago
             isFromUser: false
           },
-          unread: 2
+          unread: 2,
+          messages: []
         },
         {
           id: 2,
@@ -52,7 +52,8 @@ export function MessagesPage() {
             timestamp: new Date(Date.now() - 1000 * 60 * 60 * 2).toISOString(), // 2 hours ago
             isFromUser: true
           },
-          unread: 0
+          unread: 0,
+          messages: []
         },
         {
           id: 3,
@@ -67,7 +68,8 @@ export function MessagesPage() {
             timestamp: new Date(Date.now() - 1000 * 60 * 60 * 24).toISOString(), // 1 day ago
             isFromUser: false
           },
-          unread: 1
+          unread: 1,
+          messages: []
         },
         {
           id: 4,
@@ -82,7 +84,8 @@ export function MessagesPage() {
             timestamp: new Date(Date.now() - 1000 * 60 * 60 * 24 * 3).toISOString(), // 3 days ago
             isFromUser: false
           },
-          unread: 0
+          unread: 0,
+          messages: []
         },
         {
           id: 5,
@@ -97,7 +100,8 @@ export function MessagesPage() {
             timestamp: new Date(Date.now() - 1000 * 60 * 60 * 24 * 5).toISOString(), // 5 days ago
             isFromUser: true
           },
-          unread: 0
+          unread: 0,
+          messages: []
         }
       ];
 
@@ -116,11 +120,8 @@ export function MessagesPage() {
 
   /**
    * Generate mock messages for a conversation
-   * @param {number} conversationId - ID of the conversation
-   * @param {number} userId - ID of the other user
-   * @returns {Array} Array of message objects
    */
-  const generateMockMessages = (conversationId, userId) => {
+  const generateMockMessages = (conversationId: number, userId: number): Message[] => {
     const currentUser = { id: 999, name: 'Your Name', handle: 'yourhandle' };
     
     // Different message patterns based on conversation ID
@@ -237,13 +238,11 @@ export function MessagesPage() {
 
   /**
    * Format the timestamp to a human-readable format
-   * @param {string} timestamp - ISO timestamp
-   * @returns {string} Formatted time string
    */
-  const formatTimestamp = (timestamp) => {
+  const formatTimestamp = (timestamp: string): string => {
     const date = new Date(timestamp);
     const now = new Date();
-    const diffMs = now - date;
+    const diffMs = now.getTime() - date.getTime();
     const diffMins = Math.round(diffMs / 60000);
     const diffHours = Math.round(diffMs / 3600000);
     const diffDays = Math.round(diffMs / 86400000);
@@ -257,9 +256,8 @@ export function MessagesPage() {
 
   /**
    * Handle sending a new message
-   * @param {Event} e - Form submit event
    */
-  const handleSendMessage = (e) => {
+  const handleSendMessage = (e: React.FormEvent<HTMLFormElement>): void => {
     e.preventDefault();
     
     if (!message.trim() || !activeConversation) return;
@@ -304,9 +302,8 @@ export function MessagesPage() {
 
   /**
    * Select a conversation to view
-   * @param {Object} conversation - Conversation to view
    */
-  const selectConversation = (conversation) => {
+  const selectConversation = (conversation: Conversation): void => {
     // Mark conversation as read when selected
     const updatedConversations = conversations.map(convo => {
       if (convo.id === conversation.id) {
@@ -398,7 +395,7 @@ export function MessagesPage() {
 
             {/* Messages */}
             <div className="flex-1 overflow-y-auto p-4 space-y-4">
-              {activeConversation.messages.map(msg => {
+              {activeConversation.messages.map((msg: Message) => {
                 const isFromCurrentUser = msg.sender === 999;
                 return (
                   <div 
@@ -428,7 +425,7 @@ export function MessagesPage() {
                 <input
                   type="text"
                   value={message}
-                  onChange={(e) => setMessage(e.target.value)}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setMessage(e.target.value)}
                   placeholder="Type a message..."
                   className="flex-1 border border-gray-300 rounded-full px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
