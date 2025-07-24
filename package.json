@@ -13,6 +13,7 @@
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
+    "emoji-picker-react": "^4.13.2",
     "next": "15.4.2",
     "react": "19.1.0",
     "react-dom": "19.1.0"
