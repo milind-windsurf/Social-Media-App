@@ -3,9 +3,9 @@
  */
 
 /**
- * User object type
+ * Notification user object type (simplified for notifications)
  */
-export interface User {
+export interface NotificationUser {
   name: string;
   handle: string;
   avatar: string;
@@ -27,7 +27,7 @@ export type NotificationFilter = NotificationType | 'all';
 export interface Notification {
   id: number;
   type: NotificationType;
-  user: User;
+  user: NotificationUser;
   content: string;
   postPreview?: string;
   timestamp: string;

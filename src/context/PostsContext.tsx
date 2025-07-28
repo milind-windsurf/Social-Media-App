@@ -9,8 +9,8 @@ import { Post, NewPost } from '@/types';
 interface PostsContextType {
   posts: Post[];
   addPost: (newPost: NewPost) => void;
-  likePost: (postId: number) => void;
-  retweetPost: (postId: number) => void;
+  likePost: (postId: number | string) => void;
+  retweetPost: (postId: number | string) => void;
 }
 
 /**
@@ -304,9 +304,9 @@ export const PostsProvider = ({ children }: PostsProviderProps): JSX.Element => 
 
   /**
    * Like a post by incrementing its like count
-   * @param {number} postId - The ID of the post to like
+   * @param {number | string} postId - The ID of the post to like
    */
-  const likePost = (postId: number): void => {
+  const likePost = (postId: number | string): void => {
     setPosts(prevPosts =>
       prevPosts.map(post =>
         post.id === postId
@@ -318,9 +318,9 @@ export const PostsProvider = ({ children }: PostsProviderProps): JSX.Element => 
 
   /**
    * Retweet a post by incrementing its retweet count
-   * @param {number} postId - The ID of the post to retweet
+   * @param {number | string} postId - The ID of the post to retweet
    */
-  const retweetPost = (postId: number): void => {
+  const retweetPost = (postId: number | string): void => {
     setPosts(prevPosts =>
       prevPosts.map(post =>
         post.id === postId
