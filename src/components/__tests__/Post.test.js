@@ -85,7 +85,7 @@ describe('Post Component', () => {
     expect(mockRetweetPost).toHaveBeenCalledTimes(1);
   });
 
-  test('formats timestamp correctly', () => {
+  test('formats timestamp correctly for hours', () => {
     // Create a post with a timestamp we can control
     const recentPost = {
       ...mockPost,
@@ -105,5 +105,149 @@ describe('Post Component', () => {
              element.classList.contains('text-sm');
     });
     expect(timestampElement).toBeInTheDocument();
+  });
+
+  test('formats timestamp as "now" for very recent posts', () => {
+    const nowPost = {
+      ...mockPost,
+      timestamp: new Date(Date.now() - 30 * 1000) // 30 seconds ago
+    };
+
+    render(<Post post={nowPost} />);
+    
+    expect(screen.getByText('now')).toBeInTheDocument();
+  });
+
+  test('formats timestamp in minutes for posts under an hour', () => {
+    const minutesPost = {
+      ...mockPost,
+      timestamp: new Date(Date.now() - 30 * 60 * 1000) // 30 minutes ago
+    };
+
+    render(<Post post={minutesPost} />);
+    
+    expect(screen.getByText('30m')).toBeInTheDocument();
+  });
+
+  test('formats timestamp in days for posts over 24 hours', () => {
+    const daysPost = {
+      ...mockPost,
+      timestamp: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000) // 2 days ago
+    };
+
+    render(<Post post={daysPost} />);
+    
+    expect(screen.getByText('2d')).toBeInTheDocument();
+  });
+
+  test('handles reply button click without crashing', () => {
+    render(<Post post={mockPost} />);
+    
+    const replyButton = screen.getByText('5').closest('button');
+    
+    expect(() => {
+      fireEvent.click(replyButton);
+    }).not.toThrow();
+  });
+
+  test('handles share button click without crashing', () => {
+    render(<Post post={mockPost} />);
+    
+    const shareButtons = screen.getAllByRole('button');
+    const shareButton = shareButtons.find(button => 
+      button.querySelector('svg path[d*="M8.684 13.342"]')
+    );
+    
+    expect(() => {
+      fireEvent.click(shareButton);
+    }).not.toThrow();
+  });
+
+  test('renders with missing author information gracefully', () => {
+    const postWithMissingAuthor = {
+      ...mockPost,
+      author: {
+        name: '',
+        username: ''
+      }
+    };
+
+    expect(() => {
+      render(<Post post={postWithMissingAuthor} />);
+    }).not.toThrow();
+    
+    expect(screen.getByText('@')).toBeInTheDocument();
+  });
+
+  test('handles invalid timestamp gracefully', () => {
+    const postWithInvalidTimestamp = {
+      ...mockPost,
+      timestamp: null
+    };
+
+    expect(() => {
+      render(<Post post={postWithInvalidTimestamp} />);
+    }).not.toThrow();
+  });
+
+  test('renders with zero interaction counts', () => {
+    const postWithZeroCounts = {
+      ...mockPost,
+      likes: 0,
+      retweets: 0,
+      replies: 0
+    };
+
+    render(<Post post={postWithZeroCounts} />);
+    
+    const zeroElements = screen.getAllByText('0');
+    expect(zeroElements.length).toBeGreaterThan(0);
+  });
+
+  test('renders with very long post content', () => {
+    const longContentPost = {
+      ...mockPost,
+      content: 'A'.repeat(500)
+    };
+
+    expect(() => {
+      render(<Post post={longContentPost} />);
+    }).not.toThrow();
+    
+    expect(screen.getByText('A'.repeat(500))).toBeInTheDocument();
+  });
+
+  test('renders with special characters in author names', () => {
+    const specialCharPost = {
+      ...mockPost,
+      author: {
+        name: 'Test User 🚀',
+        username: 'test_user-123'
+      }
+    };
+
+    render(<Post post={specialCharPost} />);
+    
+    const nameElements = screen.getAllByText('Test User 🚀');
+    expect(nameElements.length).toBeGreaterThan(0);
+    expect(screen.getByText('@test_user-123')).toBeInTheDocument();
+  });
+
+  test('applies correct CSS classes for hover states', () => {
+    render(<Post post={mockPost} />);
+    
+    const postContainer = screen.getByText(mockPost.content).closest('div').parentElement.parentElement;
+    expect(postContainer).toHaveClass('hover:bg-gray-50', 'transition-colors');
+  });
+
+  test('renders all action buttons with correct structure', () => {
+    render(<Post post={mockPost} />);
+    
+    const buttons = screen.getAllByRole('button');
+    expect(buttons).toHaveLength(4); // reply, retweet, like, share
+    
+    buttons.forEach(button => {
+      expect(button.querySelector('svg')).toBeInTheDocument();
+    });
   });
 });
