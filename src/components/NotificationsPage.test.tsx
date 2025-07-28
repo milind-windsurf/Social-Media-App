@@ -1,5 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
+import { render, screen } from '@testing-library/react';
 import { NotificationsPage } from './NotificationsPage';
 import { Notification } from '@/types';
 
@@ -21,7 +20,7 @@ describe('NotificationsPage', () => {
     
     // Mock useState for each state variable
     const { useState } = require('react');
-    useState.mockImplementation((initialValue) => {
+    useState.mockImplementation((initialValue: any) => {
       if (Array.isArray(initialValue)) return [[] as Notification[], mockSetNotifications];
       if (initialValue === 'all') return ['all', mockSetActiveFilter];
       if (initialValue === true) return [false, mockSetLoading];
@@ -30,7 +29,7 @@ describe('NotificationsPage', () => {
     
     // Mock useEffect to execute the callback immediately
     const { useEffect } = require('react');
-    useEffect.mockImplementation(cb => cb());
+    useEffect.mockImplementation((cb: () => void) => cb());
   });
   
   test('renders notifications page with title', () => {
