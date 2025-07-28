@@ -2,11 +2,12 @@
 
 import { usePosts } from '@/context/PostsContext';
 import { Post } from './Post';
+import { TimelineProps } from '@/types';
 
 /**
  * Timeline component that displays all posts in chronological order
  */
-export const Timeline = () => {
+export const Timeline = ({}: TimelineProps): JSX.Element => {
   const { posts } = usePosts();
 
   return (

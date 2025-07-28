@@ -4,20 +4,20 @@ import { useState, useEffect } from 'react';
 import { usePosts } from '@/context/PostsContext';
 import { Avatar } from './Avatar';
 import { Post } from './Post';
+import { ProfilePageProps, Profile, ProfileTab } from '@/types';
+import { Post as PostType } from '@/types';
 
 /**
  * ProfilePage component that displays a user's profile information and posts
  * This component shows user details, stats, and content organized in tabs
- * 
- * @returns {JSX.Element} The profile page UI
  */
-export function ProfilePage() {
+export function ProfilePage({}: ProfilePageProps): JSX.Element {
   const { posts } = usePosts();
-  const [activeTab, setActiveTab] = useState('posts');
-  const [userPosts, setUserPosts] = useState([]);
-  const [likedPosts, setLikedPosts] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [profile, setProfile] = useState(null);
+  const [activeTab, setActiveTab] = useState<ProfileTab>('posts');
+  const [userPosts, setUserPosts] = useState<PostType[]>([]);
+  const [likedPosts, setLikedPosts] = useState<PostType[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [profile, setProfile] = useState<Profile | null>(null);
 
   /**
    * Effect hook to load profile data and filter posts
@@ -65,9 +65,8 @@ export function ProfilePage() {
 
   /**
    * Get content based on active tab
-   * @returns {JSX.Element} Content for the active tab
    */
-  const renderTabContent = () => {
+  const renderTabContent = (): JSX.Element => {
     if (loading) {
       return (
         <div className="flex justify-center items-center py-10">
@@ -108,7 +107,7 @@ export function ProfilePage() {
           </div>
         );
       default:
-        return null;
+        return <div></div>;
     }
   };
 
