@@ -3,7 +3,7 @@
  */
 
 /**
- * Author object type
+ * Author object type (simplified for current usage)
  */
 export interface Author {
   name: string;
@@ -11,12 +11,13 @@ export interface Author {
 }
 
 /**
- * Post object type
+ * Post object type (compatible with current application usage)
  */
 export interface Post {
-  id: number;
-  author: Author;
+  id: number | string;
   content: string;
+  images?: string;
+  author: Author;
   timestamp: Date;
   likes: number;
   retweets: number;
