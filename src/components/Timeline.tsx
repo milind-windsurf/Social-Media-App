@@ -2,11 +2,12 @@
 
 import { usePosts } from '@/context/PostsContext';
 import { Post } from './Post';
+import { Post as PostType } from '@/types';
 
 /**
  * Timeline component that displays all posts in chronological order
  */
-export const Timeline = () => {
+export const Timeline = (): JSX.Element => {
   const { posts } = usePosts();
 
   return (
@@ -18,7 +19,7 @@ export const Timeline = () => {
 
       {/* Posts */}
       <div className="divide-y divide-gray-200">
-        {posts.map((post) => (
+        {posts.map((post: PostType) => (
           <Post key={post.id} post={post} />
         ))}
       </div>
