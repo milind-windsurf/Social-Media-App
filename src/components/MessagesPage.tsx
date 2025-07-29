@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { Conversation, Message } from '@/types';
 
 /**
  * MessagesPage component that displays user conversations and messages
@@ -9,11 +10,11 @@ import { useState, useEffect } from 'react';
  * 
  * @returns {JSX.Element} The messages page UI
  */
-export function MessagesPage() {
-  const [conversations, setConversations] = useState([]);
-  const [activeConversation, setActiveConversation] = useState(null);
-  const [message, setMessage] = useState('');
-  const [loading, setLoading] = useState(true);
+export function MessagesPage(): JSX.Element {
+  const [conversations, setConversations] = useState<Conversation[]>([]);
+  const [activeConversation, setActiveConversation] = useState<Conversation | null>(null);
+  const [message, setMessage] = useState<string>('');
+  const [loading, setLoading] = useState<boolean>(true);
 
   /**
    * Effect hook to load conversations data
@@ -33,6 +34,7 @@ export function MessagesPage() {
             avatar: '' 
           },
           lastMessage: {
+            id: 1,
             text: 'Hey, how are you doing?',
             timestamp: new Date(Date.now() - 1000 * 60 * 15).toISOString(), // 15 minutes ago
             isFromUser: false
@@ -48,6 +50,7 @@ export function MessagesPage() {
             avatar: '' 
           },
           lastMessage: {
+            id: 2,
             text: 'Thanks for the information!',
             timestamp: new Date(Date.now() - 1000 * 60 * 60 * 2).toISOString(), // 2 hours ago
             isFromUser: true
@@ -63,6 +66,7 @@ export function MessagesPage() {
             avatar: '' 
           },
           lastMessage: {
+            id: 3,
             text: 'Are you coming to the meetup tomorrow?',
             timestamp: new Date(Date.now() - 1000 * 60 * 60 * 24).toISOString(), // 1 day ago
             isFromUser: false
@@ -78,6 +82,7 @@ export function MessagesPage() {
             avatar: '' 
           },
           lastMessage: {
+            id: 4,
             text: 'I just shared the project files with you.',
             timestamp: new Date(Date.now() - 1000 * 60 * 60 * 24 * 3).toISOString(), // 3 days ago
             isFromUser: false
@@ -93,6 +98,7 @@ export function MessagesPage() {
             avatar: '' 
           },
           lastMessage: {
+            id: 5,
             text: 'Let me know when you\'re free to discuss.',
             timestamp: new Date(Date.now() - 1000 * 60 * 60 * 24 * 5).toISOString(), // 5 days ago
             isFromUser: true
@@ -102,12 +108,17 @@ export function MessagesPage() {
       ];
 
       // Add messages to each conversation
-      mockConversations.forEach(convo => {
-        convo.messages = generateMockMessages(convo.id, convo.user.id);
-      });
+      const conversationsWithMessages = mockConversations.map(convo => ({
+        ...convo,
+        messages: generateMockMessages(convo.id, convo.user.id),
+        lastMessage: {
+          ...convo.lastMessage,
+          id: Date.now() + convo.id
+        }
+      }));
 
-      setConversations(mockConversations);
-      setActiveConversation(mockConversations[0]);
+      setConversations(conversationsWithMessages);
+      setActiveConversation(conversationsWithMessages[0]);
       setLoading(false);
     }, 1000);
 
@@ -120,7 +131,7 @@ export function MessagesPage() {
    * @param {number} userId - ID of the other user
    * @returns {Array} Array of message objects
    */
-  const generateMockMessages = (conversationId, userId) => {
+  const generateMockMessages = (conversationId: number, userId: number): Message[] => {
     const currentUser = { id: 999, name: 'Your Name', handle: 'yourhandle' };
     
     // Different message patterns based on conversation ID
@@ -132,42 +143,48 @@ export function MessagesPage() {
             text: 'Hey there!',
             timestamp: new Date(Date.now() - 1000 * 60 * 60).toISOString(),
             sender: userId,
-            receiver: currentUser.id
+            receiver: currentUser.id,
+            isFromUser: false
           },
           {
             id: 102,
             text: 'Hi! How are you?',
             timestamp: new Date(Date.now() - 1000 * 60 * 55).toISOString(),
             sender: currentUser.id,
-            receiver: userId
+            receiver: userId,
+            isFromUser: true
           },
           {
             id: 103,
             text: 'I\'m doing well, thanks for asking!',
             timestamp: new Date(Date.now() - 1000 * 60 * 50).toISOString(),
             sender: userId,
-            receiver: currentUser.id
+            receiver: currentUser.id,
+            isFromUser: false
           },
           {
             id: 104,
             text: 'Just wanted to check in about the project.',
             timestamp: new Date(Date.now() - 1000 * 60 * 45).toISOString(),
             sender: userId,
-            receiver: currentUser.id
+            receiver: currentUser.id,
+            isFromUser: false
           },
           {
             id: 105,
             text: 'Oh, right! I\'ve been working on it.',
             timestamp: new Date(Date.now() - 1000 * 60 * 30).toISOString(),
             sender: currentUser.id,
-            receiver: userId
+            receiver: userId,
+            isFromUser: true
           },
           {
             id: 106,
             text: 'Hey, how are you doing?',
             timestamp: new Date(Date.now() - 1000 * 60 * 15).toISOString(),
             sender: userId,
-            receiver: currentUser.id
+            receiver: currentUser.id,
+            isFromUser: false
           }
         ];
       case 2:
@@ -177,35 +194,40 @@ export function MessagesPage() {
             text: 'Did you see the latest documentation?',
             timestamp: new Date(Date.now() - 1000 * 60 * 60 * 3).toISOString(),
             sender: userId,
-            receiver: currentUser.id
+            receiver: currentUser.id,
+            isFromUser: false
           },
           {
             id: 202,
             text: 'Yes, I reviewed it yesterday.',
             timestamp: new Date(Date.now() - 1000 * 60 * 60 * 2.5).toISOString(),
             sender: currentUser.id,
-            receiver: userId
+            receiver: userId,
+            isFromUser: true
           },
           {
             id: 203,
             text: 'What did you think about the new features?',
             timestamp: new Date(Date.now() - 1000 * 60 * 60 * 2.4).toISOString(),
             sender: userId,
-            receiver: currentUser.id
+            receiver: currentUser.id,
+            isFromUser: false
           },
           {
             id: 204,
             text: 'I think they\'re going to be really helpful for our users.',
             timestamp: new Date(Date.now() - 1000 * 60 * 60 * 2.3).toISOString(),
             sender: currentUser.id,
-            receiver: userId
+            receiver: userId,
+            isFromUser: true
           },
           {
             id: 205,
             text: 'Thanks for the information!',
             timestamp: new Date(Date.now() - 1000 * 60 * 60 * 2).toISOString(),
             sender: currentUser.id,
-            receiver: userId
+            receiver: userId,
+            isFromUser: true
           }
         ];
       default:
@@ -215,21 +237,24 @@ export function MessagesPage() {
             text: 'Hello there!',
             timestamp: new Date(Date.now() - 1000 * 60 * 60 * 24 * 2).toISOString(),
             sender: userId,
-            receiver: currentUser.id
+            receiver: currentUser.id,
+            isFromUser: false
           },
           {
             id: 302,
             text: 'Hi! How can I help you?',
             timestamp: new Date(Date.now() - 1000 * 60 * 60 * 24 * 1.9).toISOString(),
             sender: currentUser.id,
-            receiver: userId
+            receiver: userId,
+            isFromUser: true
           },
           {
             id: 303,
             text: 'Just checking in to see how things are going.',
             timestamp: new Date(Date.now() - 1000 * 60 * 60 * 24 * 1.8).toISOString(),
             sender: userId,
-            receiver: currentUser.id
+            receiver: currentUser.id,
+            isFromUser: false
           }
         ];
     }
@@ -240,10 +265,10 @@ export function MessagesPage() {
    * @param {string} timestamp - ISO timestamp
    * @returns {string} Formatted time string
    */
-  const formatTimestamp = (timestamp) => {
+  const formatTimestamp = (timestamp: string): string => {
     const date = new Date(timestamp);
     const now = new Date();
-    const diffMs = now - date;
+    const diffMs = now.getTime() - date.getTime();
     const diffMins = Math.round(diffMs / 60000);
     const diffHours = Math.round(diffMs / 3600000);
     const diffDays = Math.round(diffMs / 86400000);
@@ -259,18 +284,19 @@ export function MessagesPage() {
    * Handle sending a new message
    * @param {Event} e - Form submit event
    */
-  const handleSendMessage = (e) => {
+  const handleSendMessage = (e: React.FormEvent): void => {
     e.preventDefault();
     
     if (!message.trim() || !activeConversation) return;
 
     const currentUser = { id: 999, name: 'Your Name', handle: 'yourhandle' };
-    const newMessage = {
+    const newMessage: Message = {
       id: Date.now(),
       text: message,
       timestamp: new Date().toISOString(),
       sender: currentUser.id,
-      receiver: activeConversation.user.id
+      receiver: activeConversation.user.id,
+      isFromUser: true
     };
 
     // Update conversations with new message
@@ -278,8 +304,9 @@ export function MessagesPage() {
       if (convo.id === activeConversation.id) {
         return {
           ...convo,
-          messages: [...convo.messages, newMessage],
+          messages: [...(convo.messages || []), newMessage],
           lastMessage: {
+            id: Date.now() + 1,
             text: message,
             timestamp: new Date().toISOString(),
             isFromUser: true
@@ -292,8 +319,9 @@ export function MessagesPage() {
     setConversations(updatedConversations);
     setActiveConversation({
       ...activeConversation,
-      messages: [...activeConversation.messages, newMessage],
+      messages: [...(activeConversation.messages || []), newMessage],
       lastMessage: {
+        id: Date.now() + 2,
         text: message,
         timestamp: new Date().toISOString(),
         isFromUser: true
@@ -306,7 +334,7 @@ export function MessagesPage() {
    * Select a conversation to view
    * @param {Object} conversation - Conversation to view
    */
-  const selectConversation = (conversation) => {
+  const selectConversation = (conversation: Conversation): void => {
     // Mark conversation as read when selected
     const updatedConversations = conversations.map(convo => {
       if (convo.id === conversation.id) {
@@ -398,7 +426,7 @@ export function MessagesPage() {
 
             {/* Messages */}
             <div className="flex-1 overflow-y-auto p-4 space-y-4">
-              {activeConversation.messages.map(msg => {
+              {activeConversation.messages?.map(msg => {
                 const isFromCurrentUser = msg.sender === 999;
                 return (
                   <div 
