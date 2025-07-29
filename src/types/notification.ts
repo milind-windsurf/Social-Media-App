@@ -2,14 +2,7 @@
  * Types for notification-related data
  */
 
-/**
- * User object type
- */
-export interface User {
-  name: string;
-  handle: string;
-  avatar: string;
-}
+import { UserDisplay } from './User';
 
 /**
  * Notification type enum
@@ -27,7 +20,7 @@ export type NotificationFilter = NotificationType | 'all';
 export interface Notification {
   id: number;
   type: NotificationType;
-  user: User;
+  user: UserDisplay;
   content: string;
   postPreview?: string;
   timestamp: string;
