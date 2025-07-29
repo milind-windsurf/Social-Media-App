@@ -1,23 +1,31 @@
-import { Geist, Geist_Mono, Righteous } from "next/font/google";
+import { Poppins, Space_Grotesk, Righteous, Outfit } from "next/font/google";
 import "./globals.css";
 import { PostsProvider } from '@/context/PostsContext';
 import { MainLayout } from '@/components/MainLayout';
 import { ReactNode } from 'react';
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const poppins = Poppins({
+  variable: "--font-poppins",
   subsets: ["latin"],
+  weight: ["300", "400", "500", "600", "700"],
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const spaceGrotesk = Space_Grotesk({
+  variable: "--font-space-grotesk",
   subsets: ["latin"],
+  weight: ["300", "400", "500", "700"],
 });
 
 const righteous = Righteous({
   weight: ["400"],
   variable: "--font-righteous",
   subsets: ["latin"],
+});
+
+const outfit = Outfit({
+  variable: "--font-outfit",
+  subsets: ["latin"],
+  weight: ["300", "400", "500", "700"],
 });
 
 export const metadata = {
@@ -33,7 +41,7 @@ export default function RootLayout({ children }: RootLayoutProps): JSX.Element {
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} ${righteous.variable} antialiased`}
+        className={`${poppins.variable} ${spaceGrotesk.variable} ${righteous.variable} ${outfit.variable} antialiased`}
       >
         <PostsProvider>
           <MainLayout>
