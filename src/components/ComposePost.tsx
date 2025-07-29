@@ -1,47 +1,71 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, FormEvent, ChangeEvent } from 'react';
 import { usePosts } from '@/context/PostsContext';
 import { Avatar } from './Avatar';
+import { Author } from '@/types';
+
+/**
+ * Props for ComposePost component
+ */
+interface ComposePostProps {
+  /** Optional placeholder text for the compose textarea */
+  placeholder?: string;
+  /** Optional callback when a post is successfully created */
+  onPostCreated?: () => void;
+  /** Optional CSS class name */
+  className?: string;
+  /** Optional character limit for posts */
+  characterLimit?: number;
+}
 
 /**
  * Component for composing and posting new tweets/posts
+ * @param {ComposePostProps} props - Component props
+ * @returns {JSX.Element} Compose post form with textarea and action buttons
  */
-export const ComposePost = () => {
-  const [content, setContent] = useState('');
+export const ComposePost = ({ 
+  placeholder = "What's happening?", 
+  onPostCreated, 
+  className,
+  characterLimit = 280 
+}: ComposePostProps): JSX.Element => {
+  const [content, setContent] = useState<string>('');
   const { addPost } = usePosts();
 
   /**
    * Handle form submission to create a new post
-   * @param {Event} e - Form submission event
+   * @param {FormEvent<HTMLFormElement>} e - Form submission event
    */
-  const handleSubmit = (e) => {
+  const handleSubmit = (e: FormEvent<HTMLFormElement>): void => {
     e.preventDefault();
     if (content.trim()) {
+      const author: Author = {
+        name: 'You',
+        username: 'you'
+      };
+      
       addPost({
-        author: {
-          name: 'You',
-          username: 'you'
-        },
+        author,
         content: content.trim()
       });
       setContent('');
+      onPostCreated?.();
     }
   };
 
   /**
    * Handle textarea input change
-   * @param {Event} e - Input change event
+   * @param {ChangeEvent<HTMLTextAreaElement>} e - Input change event
    */
-  const handleChange = (e) => {
+  const handleChange = (e: ChangeEvent<HTMLTextAreaElement>): void => {
     setContent(e.target.value);
   };
 
-  const characterLimit = 280;
   const remainingChars = characterLimit - content.length;
 
   return (
-    <div className="border-b border-gray-200 px-6 py-4 w-full">
+    <div className={`border-b border-gray-200 px-6 py-4 w-full ${className || ''}`}>
       <form onSubmit={handleSubmit}>
         <div className="flex space-x-3">
           {/* User avatar */}
@@ -55,9 +79,9 @@ export const ComposePost = () => {
             <textarea
               value={content}
               onChange={handleChange}
-              placeholder="What's happening?"
+              placeholder={placeholder}
               className="w-full p-3 text-lg placeholder-gray-500 border-none resize-none focus:outline-none focus:ring-0 text-body"
-              rows="3"
+              rows={3}
               maxLength={characterLimit}
             />
             
