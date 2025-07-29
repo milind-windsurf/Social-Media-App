@@ -4,6 +4,6 @@ import { MessagesPage } from '@/components/MessagesPage';
  * Messages page route component
  * @returns {JSX.Element} Messages page component
  */
-export default function Messages() {
+export default function Messages(): JSX.Element {
   return <MessagesPage />;
 }
