@@ -25,47 +25,52 @@ export function NotificationsPage(): JSX.Element {
       // Mock notifications data
       const mockNotifications: Notification[] = [
         {
-          id: 1,
-          type: 'like',
-          user: { name: 'Jane Smith', handle: 'janesmith', avatar: '' },
+          id: '1',
+          type: NotificationType.LIKE,
+          userId: 'user1',
+          actorId: 'janesmith',
           content: 'liked your post',
           postPreview: 'Just had an amazing day at the beach! #sunshine',
-          timestamp: new Date(Date.now() - 1000 * 60 * 15).toISOString(), // 15 minutes ago
+          createdAt: new Date(Date.now() - 1000 * 60 * 15),
           read: false
         },
         {
-          id: 2,
-          type: 'follow',
-          user: { name: 'John Doe', handle: 'johndoe', avatar: '' },
+          id: '2',
+          type: NotificationType.FOLLOW,
+          userId: 'user1',
+          actorId: 'johndoe',
           content: 'started following you',
-          timestamp: new Date(Date.now() - 1000 * 60 * 60 * 2).toISOString(), // 2 hours ago
+          createdAt: new Date(Date.now() - 1000 * 60 * 60 * 2),
           read: true
         },
         {
-          id: 3,
-          type: 'mention',
-          user: { name: 'Alex Johnson', handle: 'alexj', avatar: '' },
+          id: '3',
+          type: NotificationType.MENTION,
+          userId: 'user1',
+          actorId: 'alexj',
           content: 'mentioned you in a post',
           postPreview: 'Hey @yourhandle, check out this new restaurant!',
-          timestamp: new Date(Date.now() - 1000 * 60 * 60 * 5).toISOString(), // 5 hours ago
+          createdAt: new Date(Date.now() - 1000 * 60 * 60 * 5),
           read: false
         },
         {
-          id: 4,
-          type: 'like',
-          user: { name: 'Sarah Williams', handle: 'sarahw', avatar: '' },
+          id: '4',
+          type: NotificationType.LIKE,
+          userId: 'user1',
+          actorId: 'sarahw',
           content: 'liked your comment',
           postPreview: 'I totally agree with your perspective on this topic.',
-          timestamp: new Date(Date.now() - 1000 * 60 * 60 * 24).toISOString(), // 1 day ago
+          createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24),
           read: true
         },
         {
-          id: 5,
-          type: 'mention',
-          user: { name: 'Michael Brown', handle: 'mikebrown', avatar: '' },
+          id: '5',
+          type: NotificationType.MENTION,
+          userId: 'user1',
+          actorId: 'mikebrown',
           content: 'replied to your comment',
           postPreview: '@yourhandle Thanks for the suggestion!',
-          timestamp: new Date(Date.now() - 1000 * 60 * 60 * 24 * 2).toISOString(), // 2 days ago
+          createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 2),
           read: true
         }
       ];
@@ -88,13 +93,12 @@ export function NotificationsPage(): JSX.Element {
 
   /**
    * Format the timestamp to a human-readable format
-   * @param {string} timestamp - ISO timestamp
+   * @param {Date} timestamp - Date object
    * @returns {string} Formatted time string
    */
-  const formatTimestamp = (timestamp: string): string => {
-    const date = new Date(timestamp);
+  const formatTimestamp = (timestamp: Date): string => {
     const now = new Date();
-    const diffMs = now.getTime() - date.getTime();
+    const diffMs = now.getTime() - timestamp.getTime();
     const diffMins = Math.round(diffMs / 60000);
     const diffHours = Math.round(diffMs / 3600000);
     const diffDays = Math.round(diffMs / 86400000);
@@ -103,7 +107,7 @@ export function NotificationsPage(): JSX.Element {
     if (diffHours < 24) return `${diffHours}h`;
     if (diffDays < 7) return `${diffDays}d`;
     
-    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    return timestamp.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
   };
 
   /**
@@ -113,7 +117,7 @@ export function NotificationsPage(): JSX.Element {
    */
   const renderNotificationIcon = (type: NotificationType): JSX.Element => {
     switch (type) {
-      case 'like':
+      case NotificationType.LIKE:
         return (
           <div className="p-2 bg-red-100 rounded-full">
             <svg className="w-5 h-5 text-red-500" fill="currentColor" viewBox="0 0 20 20">
@@ -121,7 +125,7 @@ export function NotificationsPage(): JSX.Element {
             </svg>
           </div>
         );
-      case 'follow':
+      case NotificationType.FOLLOW:
         return (
           <div className="p-2 bg-blue-100 rounded-full">
             <svg className="w-5 h-5 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
@@ -129,7 +133,7 @@ export function NotificationsPage(): JSX.Element {
             </svg>
           </div>
         );
-      case 'mention':
+      case NotificationType.MENTION:
         return (
           <div className="p-2 bg-green-100 rounded-full">
             <svg className="w-5 h-5 text-green-500" fill="currentColor" viewBox="0 0 20 20">
@@ -164,20 +168,20 @@ export function NotificationsPage(): JSX.Element {
             All
           </button>
           <button 
-            className={`flex-1 py-3 text-center font-medium ${activeFilter === 'mention' ? 'text-blue-500 border-b-2 border-blue-500' : 'text-gray-500'}`}
-            onClick={() => setActiveFilter('mention')}
+            className={`flex-1 py-3 text-center font-medium ${activeFilter === NotificationType.MENTION ? 'text-blue-500 border-b-2 border-blue-500' : 'text-gray-500'}`}
+            onClick={() => setActiveFilter(NotificationType.MENTION)}
           >
             Mentions
           </button>
           <button 
-            className={`flex-1 py-3 text-center font-medium ${activeFilter === 'like' ? 'text-blue-500 border-b-2 border-blue-500' : 'text-gray-500'}`}
-            onClick={() => setActiveFilter('like')}
+            className={`flex-1 py-3 text-center font-medium ${activeFilter === NotificationType.LIKE ? 'text-blue-500 border-b-2 border-blue-500' : 'text-gray-500'}`}
+            onClick={() => setActiveFilter(NotificationType.LIKE)}
           >
             Likes
           </button>
           <button 
-            className={`flex-1 py-3 text-center font-medium ${activeFilter === 'follow' ? 'text-blue-500 border-b-2 border-blue-500' : 'text-gray-500'}`}
-            onClick={() => setActiveFilter('follow')}
+            className={`flex-1 py-3 text-center font-medium ${activeFilter === NotificationType.FOLLOW ? 'text-blue-500 border-b-2 border-blue-500' : 'text-gray-500'}`}
+            onClick={() => setActiveFilter(NotificationType.FOLLOW)}
           >
             Follows
           </button>
@@ -201,9 +205,9 @@ export function NotificationsPage(): JSX.Element {
                 <div className="flex-1 min-w-0">
                   <div className="flex justify-between">
                     <p className="font-medium text-gray-900">
-                      {notification.user.name} <span className="text-gray-500 font-normal">@{notification.user.handle}</span>
+                      {notification.actorId} <span className="text-gray-500 font-normal">@{notification.actorId}</span>
                     </p>
-                    <span className="text-sm text-gray-500">{formatTimestamp(notification.timestamp)}</span>
+                    <span className="text-sm text-gray-500">{formatTimestamp(notification.createdAt)}</span>
                   </div>
                   <p className="text-gray-700">
                     {notification.content}

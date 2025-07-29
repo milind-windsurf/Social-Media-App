@@ -1,7 +1,7 @@
 'use client';
 
 import { createContext, useContext, useState, ReactNode } from 'react';
-import { Post, NewPost } from '@/types';
+import { LegacyPost as Post, NewPost } from '@/types';
 
 /**
  * Interface for the PostsContext value
