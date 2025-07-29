@@ -25,44 +25,44 @@ export function NotificationsPage(): JSX.Element {
       // Mock notifications data
       const mockNotifications: Notification[] = [
         {
-          id: 1,
+          id: '1',
           type: 'like',
-          user: { name: 'Jane Smith', handle: 'janesmith', avatar: '' },
+          user: { id: '1', username: 'janesmith', name: 'Jane Smith', handle: 'janesmith', avatar: '' },
           content: 'liked your post',
           postPreview: 'Just had an amazing day at the beach! #sunshine',
           timestamp: new Date(Date.now() - 1000 * 60 * 15).toISOString(), // 15 minutes ago
           read: false
         },
         {
-          id: 2,
+          id: '2',
           type: 'follow',
-          user: { name: 'John Doe', handle: 'johndoe', avatar: '' },
+          user: { id: '2', username: 'johndoe', name: 'John Doe', handle: 'johndoe', avatar: '' },
           content: 'started following you',
           timestamp: new Date(Date.now() - 1000 * 60 * 60 * 2).toISOString(), // 2 hours ago
           read: true
         },
         {
-          id: 3,
+          id: '3',
           type: 'mention',
-          user: { name: 'Alex Johnson', handle: 'alexj', avatar: '' },
+          user: { id: '3', username: 'alexj', name: 'Alex Johnson', handle: 'alexj', avatar: '' },
           content: 'mentioned you in a post',
           postPreview: 'Hey @yourhandle, check out this new restaurant!',
           timestamp: new Date(Date.now() - 1000 * 60 * 60 * 5).toISOString(), // 5 hours ago
           read: false
         },
         {
-          id: 4,
+          id: '4',
           type: 'like',
-          user: { name: 'Sarah Williams', handle: 'sarahw', avatar: '' },
+          user: { id: '4', username: 'sarahw', name: 'Sarah Williams', handle: 'sarahw', avatar: '' },
           content: 'liked your comment',
           postPreview: 'I totally agree with your perspective on this topic.',
           timestamp: new Date(Date.now() - 1000 * 60 * 60 * 24).toISOString(), // 1 day ago
           read: true
         },
         {
-          id: 5,
+          id: '5',
           type: 'mention',
-          user: { name: 'Michael Brown', handle: 'mikebrown', avatar: '' },
+          user: { id: '5', username: 'mikebrown', name: 'Michael Brown', handle: 'mikebrown', avatar: '' },
           content: 'replied to your comment',
           postPreview: '@yourhandle Thanks for the suggestion!',
           timestamp: new Date(Date.now() - 1000 * 60 * 60 * 24 * 2).toISOString(), // 2 days ago
