@@ -1,7 +1,6 @@
 import { render, screen, fireEvent, act } from '@testing-library/react';
 import { PostsProvider, usePosts } from '../PostsContext';
 
-// Test component to access context values
 const TestComponent = () => {
   const { posts, addPost, likePost, retweetPost } = usePosts();
   

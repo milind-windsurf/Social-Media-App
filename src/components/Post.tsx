@@ -1,29 +1,23 @@
 'use client';
 
+import React from 'react';
 import { usePosts } from '@/context/PostsContext';
 import { Avatar } from './Avatar';
+import { Post as PostType } from '@/types/post';
 
-/**
- * Individual post component for displaying a single post in the timeline
- * @param {Object} props - Component props
- * @param {Object} props.post - The post object containing all post data
- */
-export const Post = ({ post }) => {
+interface PostProps {
+  post: PostType;
+}
+
+export const Post = ({ post }: PostProps) => {
   const { likePost, retweetPost } = usePosts();
 
-  /**
-   * Format timestamp to a readable format
-   * @param {Date} timestamp - The timestamp to format
-   * @returns {string} Formatted time string
-   */
-  const formatTime = (timestamp) => {
+  const formatTime = (timestamp: Date): string => {
     const now = new Date();
-    const diff = now - timestamp;
+    const diff = now.getTime() - timestamp.getTime();
     const minutes = Math.floor(diff / 60000);
     const hours = Math.floor(diff / 3600000);
     const days = Math.floor(diff / 86400000);
-
-    console.log('hello!');
 
     if (minutes < 1) return 'now';
     if (minutes < 60) return `${minutes}m`;
@@ -31,17 +25,11 @@ export const Post = ({ post }) => {
     return `${days}d`;
   };
 
-  /**
-   * Handle like button click
-   */
-  const handleLike = () => {
+  const handleLike = (): void => {
     likePost(post.id);
   };
 
-  /**
-   * Handle retweet button click
-   */
-  const handleRetweet = () => {
+  const handleRetweet = (): void => {
     retweetPost(post.id);
   };
 

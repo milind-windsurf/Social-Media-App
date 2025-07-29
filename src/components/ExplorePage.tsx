@@ -1,39 +1,18 @@
 'use client';
 
-import { useContext, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { usePosts } from '@/context/PostsContext';
 import { Post } from './Post';
+import { Post as PostType } from '@/types/post';
 
-/**
- * ExplorePage component that displays trending and popular posts
- * This component fetches posts from the global context and displays them
- * in order of popularity (based on likes count). It also includes a section
- * for discovering users (placeholder for future implementation).
- * 
- * @returns {JSX.Element} The explore page UI with trending posts and user discovery sections
- */
 export function ExplorePage() {
   const { posts } = usePosts();
-  const [trendingPosts, setTrendingPosts] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [trendingPosts, setTrendingPosts] = useState<PostType[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
 
-  /**
-   * Effect hook to sort and filter posts when they are loaded
-   * 
-   * This effect runs whenever the posts array changes. It:
-   * 1. Checks if posts exist and are not empty
-   * 2. Creates a sorted copy of posts based on likes count (descending)
-   * 3. Updates the trendingPosts state with the sorted array
-   * 4. Sets loading state to false once processing is complete
-   * 
-   * In a production app, this would use more sophisticated algorithms
-   * for determining trending content based on engagement metrics,
-   * recency, and user preferences.
-   */
   useEffect(() => {
     if (posts && posts.length > 0) {
-      // Sort posts by likes count to find trending posts
-      const sorted = [...posts].sort((a, b) => b.likes?.length - a.likes?.length);
+      const sorted = [...posts].sort((a, b) => b.likes - a.likes);
       setTrendingPosts(sorted);
       setLoading(false);
     }
