@@ -106,4 +106,125 @@ describe('Post Component', () => {
     });
     expect(timestampElement).toBeInTheDocument();
   });
+
+  describe('formatTime function', () => {
+    test('shows "now" for posts less than 1 minute old', () => {
+      const nowPost = {
+        ...mockPost,
+        timestamp: new Date(Date.now() - 30 * 1000) // 30 seconds ago
+      };
+
+      render(<Post post={nowPost} />);
+      expect(screen.getByText('now')).toBeInTheDocument();
+    });
+
+    test('shows minutes for posts less than 1 hour old', () => {
+      const minutesPost = {
+        ...mockPost,
+        timestamp: new Date(Date.now() - 30 * 60 * 1000) // 30 minutes ago
+      };
+
+      render(<Post post={minutesPost} />);
+      expect(screen.getByText('30m')).toBeInTheDocument();
+    });
+
+    test('shows hours for posts less than 24 hours old', () => {
+      const hoursPost = {
+        ...mockPost,
+        timestamp: new Date(Date.now() - 5 * 60 * 60 * 1000) // 5 hours ago
+      };
+
+      render(<Post post={hoursPost} />);
+      expect(screen.getByText('5h')).toBeInTheDocument();
+    });
+
+    test('shows days for posts older than 24 hours', () => {
+      const daysPost = {
+        ...mockPost,
+        timestamp: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000) // 3 days ago
+      };
+
+      render(<Post post={daysPost} />);
+      expect(screen.getByText('3d')).toBeInTheDocument();
+    });
+
+    test('handles edge case of exactly 1 minute', () => {
+      const exactMinutePost = {
+        ...mockPost,
+        timestamp: new Date(Date.now() - 60 * 1000) // exactly 1 minute ago
+      };
+
+      render(<Post post={exactMinutePost} />);
+      expect(screen.getByText('1m')).toBeInTheDocument();
+    });
+
+    test('handles edge case of exactly 1 hour', () => {
+      const exactHourPost = {
+        ...mockPost,
+        timestamp: new Date(Date.now() - 60 * 60 * 1000) // exactly 1 hour ago
+      };
+
+      render(<Post post={exactHourPost} />);
+      expect(screen.getByText('1h')).toBeInTheDocument();
+    });
+
+    test('handles edge case of exactly 24 hours', () => {
+      const exactDayPost = {
+        ...mockPost,
+        timestamp: new Date(Date.now() - 24 * 60 * 60 * 1000) // exactly 24 hours ago
+      };
+
+      render(<Post post={exactDayPost} />);
+      expect(screen.getByText('1d')).toBeInTheDocument();
+    });
+  });
+
+  describe('Edge cases and error handling', () => {
+    test('handles post with zero interaction counts', () => {
+      const zeroInteractionsPost = {
+        ...mockPost,
+        likes: 0,
+        retweets: 0,
+        replies: 0
+      };
+
+      render(<Post post={zeroInteractionsPost} />);
+      expect(screen.getAllByText('0')).toHaveLength(3);
+    });
+
+    test('handles post with large interaction counts', () => {
+      const largeCountsPost = {
+        ...mockPost,
+        likes: 9999,
+        retweets: 1234,
+        replies: 567
+      };
+
+      render(<Post post={largeCountsPost} />);
+      expect(screen.getByText('9999')).toBeInTheDocument();
+      expect(screen.getByText('1234')).toBeInTheDocument();
+      expect(screen.getByText('567')).toBeInTheDocument();
+    });
+
+    test('handles empty post content', () => {
+      const emptyContentPost = {
+        ...mockPost,
+        content: ''
+      };
+
+      render(<Post post={emptyContentPost} />);
+      expect(screen.getByRole('heading', { name: 'Test User' })).toBeInTheDocument();
+      expect(screen.getByText('@testuser')).toBeInTheDocument();
+    });
+
+    test('handles very long post content', () => {
+      const longContentPost = {
+        ...mockPost,
+        content: 'This is a very long post content that goes on and on and should still be displayed properly in the component without breaking the layout or functionality of the post.'
+      };
+
+      render(<Post post={longContentPost} />);
+      expect(screen.getByText(longContentPost.content)).toBeInTheDocument();
+    });
+  });
 });
