@@ -1,8 +1,19 @@
 'use client';
 
-import { useContext, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { usePosts } from '@/context/PostsContext';
 import { Post } from './Post';
+import { Post as PostType } from '@/types';
+
+/**
+ * Props for ExplorePage component
+ */
+interface ExplorePageProps {
+  /** Optional CSS class name */
+  className?: string;
+  /** Optional maximum number of trending posts to display */
+  maxTrendingPosts?: number;
+}
 
 /**
  * ExplorePage component that displays trending and popular posts
@@ -10,12 +21,13 @@ import { Post } from './Post';
  * in order of popularity (based on likes count). It also includes a section
  * for discovering users (placeholder for future implementation).
  * 
+ * @param {ExplorePageProps} props - Component props
  * @returns {JSX.Element} The explore page UI with trending posts and user discovery sections
  */
-export function ExplorePage() {
+export function ExplorePage({ className, maxTrendingPosts }: ExplorePageProps): JSX.Element {
   const { posts } = usePosts();
-  const [trendingPosts, setTrendingPosts] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [trendingPosts, setTrendingPosts] = useState<PostType[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
 
   /**
    * Effect hook to sort and filter posts when they are loaded
@@ -33,14 +45,15 @@ export function ExplorePage() {
   useEffect(() => {
     if (posts && posts.length > 0) {
       // Sort posts by likes count to find trending posts
-      const sorted = [...posts].sort((a, b) => b.likes?.length - a.likes?.length);
-      setTrendingPosts(sorted);
+      const sorted = [...posts].sort((a, b) => (b.likes || 0) - (a.likes || 0));
+      const displayPosts = maxTrendingPosts ? sorted.slice(0, maxTrendingPosts) : sorted;
+      setTrendingPosts(displayPosts);
       setLoading(false);
     }
-  }, [posts]);
+  }, [posts, maxTrendingPosts]);
 
   return (
-    <div className="flex flex-col w-full max-w-2xl mx-auto">
+    <div className={`flex flex-col w-full max-w-2xl mx-auto ${className || ''}`}>
       <div className="sticky top-0 z-10 bg-white dark:bg-gray-900 p-4 border-b border-gray-200 dark:border-gray-700">
         <h1 className="text-xl font-bold">Explore</h1>
       </div>
