@@ -7,10 +7,23 @@ import { Post, NewPost } from '@/types';
  * Interface for the PostsContext value
  */
 interface PostsContextType {
-  posts: Post[];
+  posts: PostWithDetails[];
   addPost: (newPost: NewPost) => void;
   likePost: (postId: number) => void;
   retweetPost: (postId: number) => void;
+}
+
+interface PostWithDetails {
+  id: number;
+  author: {
+    name: string;
+    username: string;
+  };
+  content: string;
+  timestamp: Date;
+  likes: number;
+  retweets: number;
+  replies: number;
 }
 
 /**
@@ -43,7 +56,7 @@ interface PostsProviderProps {
  */
 export const PostsProvider = ({ children }: PostsProviderProps): JSX.Element => {
   // Sample data for the timeline
-  const [posts, setPosts] = useState<Post[]>([
+  const [posts, setPosts] = useState<PostWithDetails[]>([
     {
       id: 1,
       author: {
@@ -291,7 +304,7 @@ export const PostsProvider = ({ children }: PostsProviderProps): JSX.Element => 
    * @param {NewPost} newPost - The new post object
    */
   const addPost = (newPost: NewPost): void => {
-    const post: Post = {
+    const post: PostWithDetails = {
       ...newPost,
       id: Date.now(),
       timestamp: new Date(),

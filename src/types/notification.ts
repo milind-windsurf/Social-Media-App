@@ -1,20 +1,13 @@
 /**
- * Types for notification-related data
+ * Notification-related type definitions
  */
 
-/**
- * User object type
- */
-export interface User {
-  name: string;
-  handle: string;
-  avatar: string;
-}
+import { UserSummary } from './user.types';
 
 /**
  * Notification type enum
  */
-export type NotificationType = 'like' | 'follow' | 'mention';
+export type NotificationType = 'like' | 'follow' | 'mention' | 'repost';
 
 /**
  * Filter type for notifications
@@ -25,11 +18,28 @@ export type NotificationFilter = NotificationType | 'all';
  * Notification object type
  */
 export interface Notification {
-  id: number;
+  /** Unique identifier for the notification */
+  id: string;
+  /** Type of notification */
   type: NotificationType;
-  user: User;
+  /** User who triggered the notification */
+  user: UserSummary;
+  /** Notification content/message */
+  content: string;
+  /** Optional preview of related post */
+  postPreview?: string;
+  /** Notification timestamp */
+  timestamp: string;
+  /** Whether the notification has been read */
+  read: boolean;
+}
+
+/**
+ * Notification creation input
+ */
+export interface CreateNotificationInput {
+  type: NotificationType;
+  userId: string;
   content: string;
   postPreview?: string;
-  timestamp: string;
-  read: boolean;
 }
