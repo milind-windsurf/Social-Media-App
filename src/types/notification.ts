@@ -1,29 +1,16 @@
-/**
- * Types for notification-related data
- */
+import { z } from 'zod';
+import { User as DatabaseUser } from './user';
 
-/**
- * User object type
- */
+export type NotificationType = 'like' | 'follow' | 'mention' | 'comment' | 'repost';
+
+export type NotificationFilter = NotificationType | 'all';
+
 export interface User {
   name: string;
   handle: string;
   avatar: string;
 }
 
-/**
- * Notification type enum
- */
-export type NotificationType = 'like' | 'follow' | 'mention';
-
-/**
- * Filter type for notifications
- */
-export type NotificationFilter = NotificationType | 'all';
-
-/**
- * Notification object type
- */
 export interface Notification {
   id: number;
   type: NotificationType;
@@ -33,3 +20,22 @@ export interface Notification {
   timestamp: string;
   read: boolean;
 }
+
+export interface DatabaseNotification {
+  id: string;
+  type: NotificationType;
+  user: Pick<DatabaseUser, 'id' | 'username' | 'name' | 'avatar'>;
+  content: string;
+  postPreview?: string;
+  createdAt: string;
+  read: boolean;
+}
+
+export const notificationSchema = z.object({
+  id: z.string().uuid(),
+  type: z.enum(['like', 'follow', 'mention', 'comment', 'repost']),
+  content: z.string(),
+  postPreview: z.string().optional(),
+  createdAt: z.string().datetime(),
+  read: z.boolean(),
+});
