@@ -4,32 +4,32 @@ import { usePosts } from '@/context/PostsContext';
 import { Avatar } from './Avatar';
 
 /**
+ * Format timestamp to a readable format
+ * @param {Date} timestamp - The timestamp to format
+ * @returns {string} Formatted time string
+ */
+export const formatTime = (timestamp) => {
+  const now = new Date();
+  const diff = now - timestamp;
+  const minutes = Math.floor(diff / 60000);
+  const hours = Math.floor(diff / 3600000);
+  const days = Math.floor(diff / 86400000);
+
+  console.log('hello!');
+
+  if (minutes < 1) return 'now';
+  if (minutes < 60) return `${minutes}m`;
+  if (hours < 24) return `${hours}h`;
+  return `${days}d`;
+};
+
+/**
  * Individual post component for displaying a single post in the timeline
  * @param {Object} props - Component props
  * @param {Object} props.post - The post object containing all post data
  */
 export const Post = ({ post }) => {
   const { likePost, retweetPost } = usePosts();
-
-  /**
-   * Format timestamp to a readable format
-   * @param {Date} timestamp - The timestamp to format
-   * @returns {string} Formatted time string
-   */
-  const formatTime = (timestamp) => {
-    const now = new Date();
-    const diff = now - timestamp;
-    const minutes = Math.floor(diff / 60000);
-    const hours = Math.floor(diff / 3600000);
-    const days = Math.floor(diff / 86400000);
-
-    console.log('hello!');
-
-    if (minutes < 1) return 'now';
-    if (minutes < 60) return `${minutes}m`;
-    if (hours < 24) return `${hours}h`;
-    return `${days}d`;
-  };
 
   /**
    * Handle like button click

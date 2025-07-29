@@ -1,5 +1,5 @@
 import { render, screen, fireEvent } from '@testing-library/react';
-import { Post } from '../Post';
+import { Post, formatTime } from '../Post';
 import { usePosts } from '@/context/PostsContext';
 
 // Mock the dependencies
@@ -105,5 +105,162 @@ describe('Post Component', () => {
              element.classList.contains('text-sm');
     });
     expect(timestampElement).toBeInTheDocument();
+  });
+
+  describe('formatTime utility function', () => {
+    let consoleSpy;
+
+    beforeEach(() => {
+      consoleSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
+      jest.useFakeTimers();
+    });
+
+    afterEach(() => {
+      consoleSpy.mockRestore();
+      jest.useRealTimers();
+    });
+
+    test('returns "now" when less than 1 minute ago', () => {
+      const now = new Date('2024-01-15T10:30:00');
+      const timestamp = new Date('2024-01-15T10:29:30');
+      jest.setSystemTime(now);
+
+      const result = formatTime(timestamp);
+
+      expect(result).toBe('now');
+      expect(consoleSpy).toHaveBeenCalledWith('hello!');
+    });
+
+    test('returns "now" when exactly 0 seconds ago', () => {
+      const now = new Date('2024-01-15T10:30:00');
+      const timestamp = new Date('2024-01-15T10:30:00');
+      jest.setSystemTime(now);
+
+      const result = formatTime(timestamp);
+
+      expect(result).toBe('now');
+      expect(consoleSpy).toHaveBeenCalledWith('hello!');
+    });
+
+    test('returns "1m" when exactly 1 minute ago', () => {
+      const now = new Date('2024-01-15T10:30:00');
+      const timestamp = new Date('2024-01-15T10:29:00');
+      jest.setSystemTime(now);
+
+      const result = formatTime(timestamp);
+
+      expect(result).toBe('1m');
+      expect(consoleSpy).toHaveBeenCalledWith('hello!');
+    });
+
+    test('returns minutes format when 1-59 minutes ago', () => {
+      const now = new Date('2024-01-15T10:30:00');
+      const timestamp = new Date('2024-01-15T10:00:00');
+      jest.setSystemTime(now);
+
+      const result = formatTime(timestamp);
+
+      expect(result).toBe('30m');
+      expect(consoleSpy).toHaveBeenCalledWith('hello!');
+    });
+
+    test('returns "59m" when 59 minutes ago', () => {
+      const now = new Date('2024-01-15T10:30:00');
+      const timestamp = new Date('2024-01-15T09:31:00');
+      jest.setSystemTime(now);
+
+      const result = formatTime(timestamp);
+
+      expect(result).toBe('59m');
+      expect(consoleSpy).toHaveBeenCalledWith('hello!');
+    });
+
+    test('returns "1h" when exactly 60 minutes ago', () => {
+      const now = new Date('2024-01-15T10:30:00');
+      const timestamp = new Date('2024-01-15T09:30:00');
+      jest.setSystemTime(now);
+
+      const result = formatTime(timestamp);
+
+      expect(result).toBe('1h');
+      expect(consoleSpy).toHaveBeenCalledWith('hello!');
+    });
+
+    test('returns hours format when 1-23 hours ago', () => {
+      const now = new Date('2024-01-15T10:30:00');
+      const timestamp = new Date('2024-01-15T05:30:00');
+      jest.setSystemTime(now);
+
+      const result = formatTime(timestamp);
+
+      expect(result).toBe('5h');
+      expect(consoleSpy).toHaveBeenCalledWith('hello!');
+    });
+
+    test('returns "23h" when 23 hours ago', () => {
+      const now = new Date('2024-01-15T10:30:00');
+      const timestamp = new Date('2024-01-14T11:30:00');
+      jest.setSystemTime(now);
+
+      const result = formatTime(timestamp);
+
+      expect(result).toBe('23h');
+      expect(consoleSpy).toHaveBeenCalledWith('hello!');
+    });
+
+    test('returns "1d" when exactly 24 hours ago', () => {
+      const now = new Date('2024-01-15T10:30:00');
+      const timestamp = new Date('2024-01-14T10:30:00');
+      jest.setSystemTime(now);
+
+      const result = formatTime(timestamp);
+
+      expect(result).toBe('1d');
+      expect(consoleSpy).toHaveBeenCalledWith('hello!');
+    });
+
+    test('returns days format when 24+ hours ago', () => {
+      const now = new Date('2024-01-17T10:30:00');
+      const timestamp = new Date('2024-01-15T10:30:00');
+      jest.setSystemTime(now);
+
+      const result = formatTime(timestamp);
+
+      expect(result).toBe('2d');
+      expect(consoleSpy).toHaveBeenCalledWith('hello!');
+    });
+
+    test('returns days format for longer periods', () => {
+      const now = new Date('2024-01-22T10:30:00');
+      const timestamp = new Date('2024-01-15T10:30:00');
+      jest.setSystemTime(now);
+
+      const result = formatTime(timestamp);
+
+      expect(result).toBe('7d');
+      expect(consoleSpy).toHaveBeenCalledWith('hello!');
+    });
+
+    test('handles edge case with millisecond precision', () => {
+      const now = new Date('2024-01-15T10:30:00.999');
+      const timestamp = new Date('2024-01-15T10:29:00.000');
+      jest.setSystemTime(now);
+
+      const result = formatTime(timestamp);
+
+      expect(result).toBe('1m');
+      expect(consoleSpy).toHaveBeenCalledWith('hello!');
+    });
+
+    test('console.log is called exactly once per function call', () => {
+      const now = new Date('2024-01-15T10:30:00');
+      const timestamp = new Date('2024-01-15T10:29:30');
+      jest.setSystemTime(now);
+
+      formatTime(timestamp);
+
+      expect(consoleSpy).toHaveBeenCalledTimes(1);
+      expect(consoleSpy).toHaveBeenCalledWith('hello!');
+    });
   });
 });
