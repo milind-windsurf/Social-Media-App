@@ -106,4 +106,122 @@ describe('Post Component', () => {
     });
     expect(timestampElement).toBeInTheDocument();
   });
+
+  test('formatTime returns "now" for timestamps less than 1 minute ago', () => {
+    const veryRecentPost = {
+      ...mockPost,
+      timestamp: new Date(Date.now() - 30 * 1000)
+    };
+
+    render(<Post post={veryRecentPost} />);
+    expect(screen.getByText('now')).toBeInTheDocument();
+  });
+
+  test('formatTime returns minutes for timestamps between 1-59 minutes ago', () => {
+    const minutesAgoPost = {
+      ...mockPost,
+      timestamp: new Date(Date.now() - 30 * 60 * 1000)
+    };
+
+    render(<Post post={minutesAgoPost} />);
+    expect(screen.getByText('30m')).toBeInTheDocument();
+  });
+
+  test('formatTime returns hours for timestamps between 1-23 hours ago', () => {
+    const hoursAgoPost = {
+      ...mockPost,
+      timestamp: new Date(Date.now() - 5 * 60 * 60 * 1000)
+    };
+
+    render(<Post post={hoursAgoPost} />);
+    expect(screen.getByText('5h')).toBeInTheDocument();
+  });
+
+  test('formatTime returns days for timestamps 24+ hours ago', () => {
+    const daysAgoPost = {
+      ...mockPost,
+      timestamp: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000)
+    };
+
+    render(<Post post={daysAgoPost} />);
+    expect(screen.getByText('3d')).toBeInTheDocument();
+  });
+
+  test('formatTime handles edge case of exactly 1 minute ago', () => {
+    const exactlyOneMinutePost = {
+      ...mockPost,
+      timestamp: new Date(Date.now() - 60 * 1000)
+    };
+
+    render(<Post post={exactlyOneMinutePost} />);
+    expect(screen.getByText('1m')).toBeInTheDocument();
+  });
+
+  test('formatTime handles edge case of exactly 1 hour ago', () => {
+    const exactlyOneHourPost = {
+      ...mockPost,
+      timestamp: new Date(Date.now() - 60 * 60 * 1000)
+    };
+
+    render(<Post post={exactlyOneHourPost} />);
+    expect(screen.getByText('1h')).toBeInTheDocument();
+  });
+
+  test('formatTime handles edge case of exactly 24 hours ago', () => {
+    const exactlyOneDayPost = {
+      ...mockPost,
+      timestamp: new Date(Date.now() - 24 * 60 * 60 * 1000)
+    };
+
+    render(<Post post={exactlyOneDayPost} />);
+    expect(screen.getByText('1d')).toBeInTheDocument();
+  });
+
+  test('handles multiple rapid clicks on like button', () => {
+    render(<Post post={mockPost} />);
+    
+    const likeButton = screen.getByText('42').closest('button');
+    fireEvent.click(likeButton);
+    fireEvent.click(likeButton);
+    fireEvent.click(likeButton);
+    
+    expect(mockLikePost).toHaveBeenCalledTimes(3);
+    expect(mockLikePost).toHaveBeenCalledWith(mockPost.id);
+  });
+
+  test('handles multiple rapid clicks on retweet button', () => {
+    render(<Post post={mockPost} />);
+    
+    const retweetButton = screen.getByText('12').closest('button');
+    fireEvent.click(retweetButton);
+    fireEvent.click(retweetButton);
+    
+    expect(mockRetweetPost).toHaveBeenCalledTimes(2);
+    expect(mockRetweetPost).toHaveBeenCalledWith(mockPost.id);
+  });
+
+  test('renders correctly with zero interaction counts', () => {
+    const zeroInteractionPost = {
+      ...mockPost,
+      likes: 0,
+      retweets: 0,
+      replies: 0
+    };
+
+    render(<Post post={zeroInteractionPost} />);
+    
+    expect(screen.getAllByText('0')).toHaveLength(3);
+  });
+
+  test('throws error when used outside PostsProvider', () => {
+    const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+    
+    usePosts.mockImplementation(() => {
+      throw new Error('usePosts must be used within a PostsProvider');
+    });
+
+    expect(() => render(<Post post={mockPost} />)).toThrow('usePosts must be used within a PostsProvider');
+    
+    consoleSpy.mockRestore();
+  });
 });
