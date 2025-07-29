@@ -70,7 +70,7 @@ export const Avatar = ({ name, size = 'md', className = '' }: AvatarProps): JSX.
     
     // Use hash to select a color consistently
     const colorIndex = Math.abs(hash) % colors.length;
-    return colors[colorIndex];
+    return colors[colorIndex] ?? { bg: 'bg-gray-400', text: 'text-white' };
   };
 
   /**
@@ -81,15 +81,16 @@ export const Avatar = ({ name, size = 'md', className = '' }: AvatarProps): JSX.
   const getInitials = (name: string): string => {
     if (!name) return '?';
     
-    const nameParts = name.trim().split(' ');
+    const nameParts = name.trim().split(' ').filter(part => part.length > 0);
+    if (nameParts.length === 0) return '?';
     if (nameParts.length === 1) {
       // If only one name, return first letter
-      return nameParts[0].charAt(0).toUpperCase();
+      return nameParts[0]!.charAt(0).toUpperCase();
     } else {
       // Return first letter of first name and first letter of last name
       return (
-        nameParts[0].charAt(0).toUpperCase() + 
-        nameParts[nameParts.length - 1].charAt(0).toUpperCase()
+        nameParts[0]!.charAt(0).toUpperCase() + 
+        nameParts[nameParts.length - 1]!.charAt(0).toUpperCase()
       );
     }
   };
