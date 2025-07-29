@@ -1,21 +1,39 @@
 'use client';
 
+import React from 'react';
+
+/**
+ * Props for UserSettingsMenu component
+ */
+interface UserSettingsMenuProps {
+  isOpen: boolean;
+  onClose: () => void;
+}
+
+/**
+ * Menu item interface
+ */
+interface MenuItem {
+  label: string;
+  icon: React.ReactNode;
+  onClick: () => void;
+  className?: string;
+}
+
 /**
  * UserSettingsMenu component for displaying user settings options in a popup menu
- * @param {Object} props - Component props
- * @param {boolean} props.isOpen - Whether the menu is currently open
- * @param {Function} props.onClose - Function to call when the menu should be closed
  */
-export const UserSettingsMenu = ({ isOpen, onClose }) => {
+export const UserSettingsMenu = ({ isOpen, onClose }: UserSettingsMenuProps): JSX.Element | null => {
   if (!isOpen) return null;
 
-  // Handle clicks inside the menu to prevent closing when clicking inside
-  const handleMenuClick = (e) => {
+  /**
+   * Handle clicks inside the menu to prevent closing when clicking inside
+   */
+  const handleMenuClick = (e: React.MouseEvent<HTMLDivElement>): void => {
     e.stopPropagation();
   };
 
-  // Settings menu items with icons
-  const menuItems = [
+  const menuItems: MenuItem[] = [
     { 
       label: 'Profile Settings', 
       icon: (

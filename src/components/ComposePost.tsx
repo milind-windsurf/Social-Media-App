@@ -1,21 +1,20 @@
 'use client';
 
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { usePosts } from '@/context/PostsContext';
 import { Avatar } from './Avatar';
 
 /**
  * Component for composing and posting new tweets/posts
  */
-export const ComposePost = () => {
-  const [content, setContent] = useState('');
+export const ComposePost = (): JSX.Element => {
+  const [content, setContent] = useState<string>('');
   const { addPost } = usePosts();
 
   /**
    * Handle form submission to create a new post
-   * @param {Event} e - Form submission event
    */
-  const handleSubmit = (e) => {
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>): void => {
     e.preventDefault();
     if (content.trim()) {
       addPost({
@@ -31,9 +30,8 @@ export const ComposePost = () => {
 
   /**
    * Handle textarea input change
-   * @param {Event} e - Input change event
    */
-  const handleChange = (e) => {
+  const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>): void => {
     setContent(e.target.value);
   };
 
@@ -57,7 +55,7 @@ export const ComposePost = () => {
               onChange={handleChange}
               placeholder="What's happening?"
               className="w-full p-3 text-lg placeholder-gray-500 border-none resize-none focus:outline-none focus:ring-0 text-body"
-              rows="3"
+              rows={3}
               maxLength={characterLimit}
             />
             
