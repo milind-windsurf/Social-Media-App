@@ -106,4 +106,182 @@ describe('Post Component', () => {
     });
     expect(timestampElement).toBeInTheDocument();
   });
+
+  describe('formatTime utility function', () => {
+    let consoleSpy;
+
+    beforeEach(() => {
+      consoleSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
+      jest.useFakeTimers();
+    });
+
+    afterEach(() => {
+      consoleSpy.mockRestore();
+      jest.useRealTimers();
+    });
+
+    test('returns "now" for timestamps less than 1 minute ago', () => {
+      const currentTime = new Date('2024-01-15T12:00:00');
+      jest.setSystemTime(currentTime);
+      
+      const timestamp30SecondsAgo = new Date('2024-01-15T11:59:30');
+      
+      const testPost = {
+        ...mockPost,
+        timestamp: timestamp30SecondsAgo
+      };
+
+      render(<Post post={testPost} />);
+      
+      expect(screen.getByText('now')).toBeInTheDocument();
+      expect(consoleSpy).toHaveBeenCalledWith('hello!');
+    });
+
+    test('returns "Xm" format for timestamps between 1-59 minutes ago', () => {
+      const currentTime = new Date('2024-01-15T12:00:00');
+      jest.setSystemTime(currentTime);
+      
+      const timestamp30MinutesAgo = new Date('2024-01-15T11:30:00');
+      
+      const testPost = {
+        ...mockPost,
+        timestamp: timestamp30MinutesAgo
+      };
+
+      render(<Post post={testPost} />);
+      
+      expect(screen.getByText('30m')).toBeInTheDocument();
+      expect(consoleSpy).toHaveBeenCalledWith('hello!');
+    });
+
+    test('returns "1m" for exactly 1 minute ago', () => {
+      const currentTime = new Date('2024-01-15T12:00:00');
+      jest.setSystemTime(currentTime);
+      
+      const timestamp1MinuteAgo = new Date('2024-01-15T11:59:00');
+      
+      const testPost = {
+        ...mockPost,
+        timestamp: timestamp1MinuteAgo
+      };
+
+      render(<Post post={testPost} />);
+      
+      expect(screen.getByText('1m')).toBeInTheDocument();
+    });
+
+    test('returns "59m" for 59 minutes ago (boundary case)', () => {
+      const currentTime = new Date('2024-01-15T12:00:00');
+      jest.setSystemTime(currentTime);
+      
+      const timestamp59MinutesAgo = new Date('2024-01-15T11:01:00');
+      
+      const testPost = {
+        ...mockPost,
+        timestamp: timestamp59MinutesAgo
+      };
+
+      render(<Post post={testPost} />);
+      
+      expect(screen.getByText('59m')).toBeInTheDocument();
+    });
+
+    test('returns "Xh" format for timestamps between 1-23 hours ago', () => {
+      const currentTime = new Date('2024-01-15T12:00:00');
+      jest.setSystemTime(currentTime);
+      
+      const timestamp5HoursAgo = new Date('2024-01-15T07:00:00');
+      
+      const testPost = {
+        ...mockPost,
+        timestamp: timestamp5HoursAgo
+      };
+
+      render(<Post post={testPost} />);
+      
+      expect(screen.getByText('5h')).toBeInTheDocument();
+      expect(consoleSpy).toHaveBeenCalledWith('hello!');
+    });
+
+    test('returns "1h" for exactly 1 hour ago', () => {
+      const currentTime = new Date('2024-01-15T12:00:00');
+      jest.setSystemTime(currentTime);
+      
+      const timestamp1HourAgo = new Date('2024-01-15T11:00:00');
+      
+      const testPost = {
+        ...mockPost,
+        timestamp: timestamp1HourAgo
+      };
+
+      render(<Post post={testPost} />);
+      
+      expect(screen.getByText('1h')).toBeInTheDocument();
+    });
+
+    test('returns "23h" for 23 hours ago (boundary case)', () => {
+      const currentTime = new Date('2024-01-15T12:00:00');
+      jest.setSystemTime(currentTime);
+      
+      const timestamp23HoursAgo = new Date('2024-01-14T13:00:00');
+      
+      const testPost = {
+        ...mockPost,
+        timestamp: timestamp23HoursAgo
+      };
+
+      render(<Post post={testPost} />);
+      
+      expect(screen.getByText('23h')).toBeInTheDocument();
+    });
+
+    test('returns "Xd" format for timestamps 24+ hours ago', () => {
+      const currentTime = new Date('2024-01-15T12:00:00');
+      jest.setSystemTime(currentTime);
+      
+      const timestamp3DaysAgo = new Date('2024-01-12T12:00:00');
+      
+      const testPost = {
+        ...mockPost,
+        timestamp: timestamp3DaysAgo
+      };
+
+      render(<Post post={testPost} />);
+      
+      expect(screen.getByText('3d')).toBeInTheDocument();
+      expect(consoleSpy).toHaveBeenCalledWith('hello!');
+    });
+
+    test('returns "1d" for exactly 24 hours ago', () => {
+      const currentTime = new Date('2024-01-15T12:00:00');
+      jest.setSystemTime(currentTime);
+      
+      const timestamp1DayAgo = new Date('2024-01-14T12:00:00');
+      
+      const testPost = {
+        ...mockPost,
+        timestamp: timestamp1DayAgo
+      };
+
+      render(<Post post={testPost} />);
+      
+      expect(screen.getByText('1d')).toBeInTheDocument();
+    });
+
+    test('handles very old timestamps correctly', () => {
+      const currentTime = new Date('2024-01-15T12:00:00');
+      jest.setSystemTime(currentTime);
+      
+      const timestamp30DaysAgo = new Date('2023-12-16T12:00:00');
+      
+      const testPost = {
+        ...mockPost,
+        timestamp: timestamp30DaysAgo
+      };
+
+      render(<Post post={testPost} />);
+      
+      expect(screen.getByText('30d')).toBeInTheDocument();
+    });
+  });
 });
