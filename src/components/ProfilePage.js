@@ -9,7 +9,7 @@ import { Post } from './Post';
  * ProfilePage component that displays a user's profile information and posts
  * This component shows user details, stats, and content organized in tabs
  * 
- * @returns {JSX.Element} The profile page UI
+ * @returns {React.ReactElement} The profile page UI
  */
 export function ProfilePage() {
   const { posts } = usePosts();
@@ -65,7 +65,7 @@ export function ProfilePage() {
 
   /**
    * Get content based on active tab
-   * @returns {JSX.Element} Content for the active tab
+   * @returns {React.ReactElement} Content for the active tab
    */
   const renderTabContent = () => {
     if (loading) {

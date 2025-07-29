@@ -10,7 +10,7 @@ import { Post } from './Post';
  * in order of popularity (based on likes count). It also includes a section
  * for discovering users (placeholder for future implementation).
  * 
- * @returns {JSX.Element} The explore page UI with trending posts and user discovery sections
+ * @returns {React.ReactElement} The explore page UI with trending posts and user discovery sections
  */
 export function ExplorePage() {
   const { posts } = usePosts();

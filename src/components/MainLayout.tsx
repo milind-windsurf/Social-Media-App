@@ -15,9 +15,9 @@ interface MainLayoutProps {
  * This component ensures the sidebar is persistent across all pages
  * 
  * @param {MainLayoutProps} props - Component props
- * @returns {JSX.Element} Layout with sidebar and main content
+ * @returns {React.ReactElement} Layout with sidebar and main content
  */
-export function MainLayout({ children }: MainLayoutProps): JSX.Element {
+export function MainLayout({ children }: MainLayoutProps): React.ReactElement {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Sidebar */}

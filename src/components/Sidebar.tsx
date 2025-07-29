@@ -18,7 +18,7 @@ interface NavigationItem {
 /**
  * Sidebar navigation component for the social media app
  */
-export const Sidebar = (): JSX.Element => {
+export const Sidebar = (): React.ReactElement => {
   // State to control the visibility of the settings menu
   const [isSettingsMenuOpen, setIsSettingsMenuOpen] = useState<boolean>(false);
   const pathname = usePathname();
@@ -50,9 +50,9 @@ export const Sidebar = (): JSX.Element => {
    * Render icon based on icon name
    * @param {string} iconName - Name of the icon to render
    * @param {boolean} active - Whether the icon should be in active state
-   * @returns {JSX.Element | null} The icon component
+   * @returns {React.ReactElement | null} The icon component
    */
-  const renderIcon = (iconName: string, active = false): JSX.Element | null => {
+  const renderIcon = (iconName: string, active = false): React.ReactElement | null => {
     const className = `w-6 h-6 ${active ? 'stroke-2' : 'stroke-1.5'}`;
     
     switch (iconName) {
@@ -113,7 +113,7 @@ export const Sidebar = (): JSX.Element => {
           return (
             <Link
               key={item.name}
-              href={item.path}
+              href={item.path as `/` | `/explore` | `/notifications` | `/messages` | `/profile`}
               className={`w-full flex items-center space-x-4 px-4 py-3 rounded-full text-left transition-colors ${
                 isActive
                   ? 'bg-blue-50 text-blue-600 font-medium'

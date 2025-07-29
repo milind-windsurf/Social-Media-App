@@ -8,9 +8,9 @@ import { Notification, NotificationType, NotificationFilter } from '@/types';
  * This component shows different types of notifications such as likes, mentions,
  * and follows, with options to filter by notification type.
  * 
- * @returns {JSX.Element} The notifications page UI
+ * @returns {React.ReactElement} The notifications page UI
  */
-export function NotificationsPage(): JSX.Element {
+export function NotificationsPage(): React.ReactElement {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [activeFilter, setActiveFilter] = useState<NotificationFilter>('all');
   const [loading, setLoading] = useState<boolean>(true);
@@ -109,9 +109,9 @@ export function NotificationsPage(): JSX.Element {
   /**
    * Render the appropriate icon for each notification type
    * @param {NotificationType} type - Notification type
-   * @returns {JSX.Element} Icon SVG
+   * @returns {React.ReactElement} Icon SVG
    */
-  const renderNotificationIcon = (type: NotificationType): JSX.Element => {
+  const renderNotificationIcon = (type: NotificationType): React.ReactElement => {
     switch (type) {
       case 'like':
         return (
