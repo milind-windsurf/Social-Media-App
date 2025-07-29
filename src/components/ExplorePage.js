@@ -33,7 +33,7 @@ export function ExplorePage() {
   useEffect(() => {
     if (posts && posts.length > 0) {
       // Sort posts by likes count to find trending posts
-      const sorted = [...posts].sort((a, b) => b.likes?.length - a.likes?.length);
+      const sorted = [...posts].sort((a, b) => b.likes - a.likes);
       setTrendingPosts(sorted);
       setLoading(false);
     }
