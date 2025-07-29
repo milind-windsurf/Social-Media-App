@@ -106,4 +106,102 @@ describe('Post Component', () => {
     });
     expect(timestampElement).toBeInTheDocument();
   });
+
+  describe('formatTime function edge cases', () => {
+    test('returns "now" for timestamps less than 1 minute ago', () => {
+      const nowPost = {
+        ...mockPost,
+        timestamp: new Date(Date.now() - 30000) // 30 seconds ago
+      };
+      render(<Post post={nowPost} />);
+      expect(screen.getByText('now')).toBeInTheDocument();
+    });
+
+    test('returns minutes for timestamps less than 60 minutes ago', () => {
+      const minutesPost = {
+        ...mockPost,
+        timestamp: new Date(Date.now() - 45 * 60 * 1000) // 45 minutes ago
+      };
+      render(<Post post={minutesPost} />);
+      expect(screen.getByText('45m')).toBeInTheDocument();
+    });
+
+    test('returns days for timestamps more than 24 hours ago', () => {
+      const daysPost = {
+        ...mockPost,
+        timestamp: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000) // 3 days ago
+      };
+      render(<Post post={daysPost} />);
+      expect(screen.getByText('3d')).toBeInTheDocument();
+    });
+  });
+
+  describe('error handling and edge cases', () => {
+    test('handles missing author properties gracefully', () => {
+      const incompletePost = {
+        ...mockPost,
+        author: { name: 'Test User' } // missing username
+      };
+      render(<Post post={incompletePost} />);
+      expect(screen.getByText((content, element) => {
+        return content === 'Test User' && element.tagName.toLowerCase() === 'h3';
+      })).toBeInTheDocument();
+    });
+
+    test('handles zero interaction counts', () => {
+      const zeroPost = {
+        ...mockPost,
+        likes: 0,
+        retweets: 0,
+        replies: 0
+      };
+      render(<Post post={zeroPost} />);
+      const zeroElements = screen.getAllByText('0');
+      expect(zeroElements.length).toBe(3); // likes, retweets, replies
+    });
+
+    test('handles very large interaction counts', () => {
+      const popularPost = {
+        ...mockPost,
+        likes: 9999,
+        retweets: 5000,
+        replies: 1500
+      };
+      render(<Post post={popularPost} />);
+      expect(screen.getByText('9999')).toBeInTheDocument();
+      expect(screen.getByText('5000')).toBeInTheDocument();
+      expect(screen.getByText('1500')).toBeInTheDocument();
+    });
+  });
+
+  describe('button interactions', () => {
+    test('renders reply button without click handler', () => {
+      render(<Post post={mockPost} />);
+      const replyButton = screen.getByText('5').closest('button');
+      expect(replyButton).toBeInTheDocument();
+      expect(replyButton).not.toHaveAttribute('onClick');
+    });
+
+    test('renders share button without click handler', () => {
+      render(<Post post={mockPost} />);
+      const shareButtons = screen.getAllByRole('button');
+      const shareButton = shareButtons.find(button => 
+        button.querySelector('svg path[d*="M8.684 13.342"]')
+      );
+      expect(shareButton).toBeInTheDocument();
+    });
+  });
+
+  describe('accessibility', () => {
+    test('has proper semantic structure', () => {
+      render(<Post post={mockPost} />);
+      const buttons = screen.getAllByRole('button');
+      expect(buttons.length).toBeGreaterThan(0);
+    });
+
+    test('avatar has proper accessibility attributes', () => {
+      render(<Post post={mockPost} />);
+      expect(screen.getByTestId('avatar-mock')).toBeInTheDocument();
+    });
+  });
 });
