@@ -1,7 +1,7 @@
+import React from 'react';
 import { render, screen, fireEvent, act } from '@testing-library/react';
 import { PostsProvider, usePosts } from '../PostsContext';
 
-// Test component to access context values
 const TestComponent = () => {
   const { posts, addPost, likePost, retweetPost } = usePosts();
   
@@ -58,7 +58,7 @@ describe('PostsContext', () => {
       </PostsProvider>
     );
     
-    const initialCount = parseInt(screen.getByTestId('post-count').textContent);
+    const initialCount = parseInt(screen.getByTestId('post-count').textContent || '0');
     
     act(() => {
       fireEvent.click(screen.getByTestId('add-post'));
@@ -77,7 +77,7 @@ describe('PostsContext', () => {
     
     // Get the first post's initial like count
     const firstPostId = 1;
-    const initialLikes = parseInt(screen.getByTestId(`likes-${firstPostId}`).textContent);
+    const initialLikes = parseInt(screen.getByTestId(`likes-${firstPostId}`).textContent || '0');
     
     act(() => {
       fireEvent.click(screen.getByTestId('like-post'));
@@ -96,7 +96,7 @@ describe('PostsContext', () => {
     
     // Get the first post's initial retweet count
     const firstPostId = 1;
-    const initialRetweets = parseInt(screen.getByTestId(`retweets-${firstPostId}`).textContent);
+    const initialRetweets = parseInt(screen.getByTestId(`retweets-${firstPostId}`).textContent || '0');
     
     act(() => {
       fireEvent.click(screen.getByTestId('retweet-post'));

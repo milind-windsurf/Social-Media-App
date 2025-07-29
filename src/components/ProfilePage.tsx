@@ -1,33 +1,39 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { usePosts } from '@/context/PostsContext';
 import { Avatar } from './Avatar';
 import { Post } from './Post';
+import { Post as PostType } from '@/types/post';
 
-/**
- * ProfilePage component that displays a user's profile information and posts
- * This component shows user details, stats, and content organized in tabs
- * 
- * @returns {JSX.Element} The profile page UI
- */
+interface Profile {
+  id: number;
+  name: string;
+  handle: string;
+  bio: string;
+  location: string;
+  website: string;
+  joinDate: string;
+  following: number;
+  followers: number;
+  postsCount: number;
+  coverPhoto: string;
+  avatar: string;
+}
+
+type TabType = 'posts' | 'likes' | 'media';
+
 export function ProfilePage() {
   const { posts } = usePosts();
-  const [activeTab, setActiveTab] = useState('posts');
-  const [userPosts, setUserPosts] = useState([]);
-  const [likedPosts, setLikedPosts] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [profile, setProfile] = useState(null);
+  const [activeTab, setActiveTab] = useState<TabType>('posts');
+  const [userPosts, setUserPosts] = useState<PostType[]>([]);
+  const [likedPosts, setLikedPosts] = useState<PostType[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [profile, setProfile] = useState<Profile | null>(null);
 
-  /**
-   * Effect hook to load profile data and filter posts
-   * In a real app, this would fetch from an API
-   */
   useEffect(() => {
-    // Simulate API call with timeout
     const timer = setTimeout(() => {
-      // Mock profile data
-      const mockProfile = {
+      const mockProfile: Profile = {
         id: 1,
         name: 'Your Name',
         handle: 'yourhandle',
@@ -44,15 +50,10 @@ export function ProfilePage() {
 
       setProfile(mockProfile);
       
-      // Filter posts for the current user
       if (posts && posts.length > 0) {
-        // In a real app, we'd filter by actual user ID
-        // For demo purposes, let's assume posts with even IDs belong to the current user
         const userPostsFiltered = posts.filter(post => post.id % 2 === 0);
         setUserPosts(userPostsFiltered);
         
-        // Mock liked posts (in a real app, this would come from user data)
-        // For demo purposes, let's assume the user liked posts with odd IDs
         const likedPostsFiltered = posts.filter(post => post.id % 2 === 1);
         setLikedPosts(likedPostsFiltered);
       }
@@ -63,11 +64,7 @@ export function ProfilePage() {
     return () => clearTimeout(timer);
   }, [posts]);
 
-  /**
-   * Get content based on active tab
-   * @returns {JSX.Element} Content for the active tab
-   */
-  const renderTabContent = () => {
+  const renderTabContent = (): React.JSX.Element => {
     if (loading) {
       return (
         <div className="flex justify-center items-center py-10">
@@ -108,7 +105,7 @@ export function ProfilePage() {
           </div>
         );
       default:
-        return null;
+        return <div></div>;
     }
   };
 
