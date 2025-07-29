@@ -2,8 +2,8 @@ import { NotificationsPage } from '@/components/NotificationsPage';
 
 /**
  * Notifications page route component
- * @returns {JSX.Element} Notifications page component
+ * @returns {React.ReactElement} Notifications page component
  */
-export default function Notifications(): JSX.Element {
+export default function Notifications(): React.ReactElement {
   return <NotificationsPage />;
 }

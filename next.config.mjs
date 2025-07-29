@@ -1,4 +1,11 @@
 /** @type {import('next').NextConfig} */
-const nextConfig = {};
+const nextConfig = {
+  typescript: {
+    tsconfigPath: './tsconfig.json',
+  },
+  experimental: {
+    typedRoutes: true,
+  },
+};
 
 export default nextConfig;

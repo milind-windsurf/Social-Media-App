@@ -41,7 +41,7 @@ interface PostsProviderProps {
  * Provider component for posts context
  * @param {PostsProviderProps} props - Component props
  */
-export const PostsProvider = ({ children }: PostsProviderProps): JSX.Element => {
+export const PostsProvider = ({ children }: PostsProviderProps): React.ReactElement => {
   // Sample data for the timeline
   const [posts, setPosts] = useState<Post[]>([
     {

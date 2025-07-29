@@ -4,7 +4,7 @@ import { ComposePost } from '@/components/ComposePost';
 /**
  * Home page component that renders the main social media timeline
  */
-export default function Home(): JSX.Element {
+export default function Home(): React.ReactElement {
   return (
     <>
       {/* Compose post section */}

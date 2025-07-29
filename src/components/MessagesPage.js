@@ -7,7 +7,7 @@ import { useState, useEffect } from 'react';
  * This component shows a list of conversations on the left and the selected
  * conversation messages on the right, with the ability to send new messages.
  * 
- * @returns {JSX.Element} The messages page UI
+ * @returns {React.ReactElement} The messages page UI
  */
 export function MessagesPage() {
   const [conversations, setConversations] = useState([]);
