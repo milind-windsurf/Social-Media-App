@@ -106,4 +106,47 @@ describe('Post Component', () => {
     });
     expect(timestampElement).toBeInTheDocument();
   });
+
+  describe('formatTime function edge cases', () => {
+    test('shows "now" for timestamps less than 1 minute ago', () => {
+      const recentPost = {
+        ...mockPost,
+        timestamp: new Date(Date.now() - 30 * 1000) // 30 seconds ago
+      };
+
+      render(<Post post={recentPost} />);
+      expect(screen.getByText('now')).toBeInTheDocument();
+    });
+
+    test('shows minutes for timestamps less than 1 hour ago', () => {
+      const minutesAgoPost = {
+        ...mockPost,
+        timestamp: new Date(Date.now() - 45 * 60 * 1000) // 45 minutes ago
+      };
+
+      render(<Post post={minutesAgoPost} />);
+      expect(screen.getByText('45m')).toBeInTheDocument();
+    });
+
+    test('shows hours for timestamps less than 24 hours ago', () => {
+      const hoursAgoPost = {
+        ...mockPost,
+        timestamp: new Date(Date.now() - 12 * 60 * 60 * 1000) // 12 hours ago
+      };
+
+      render(<Post post={hoursAgoPost} />);
+      expect(screen.getByText('12h')).toBeInTheDocument();
+    });
+
+    test('shows days for timestamps 24+ hours ago', () => {
+      const daysAgoPost = {
+        ...mockPost,
+        timestamp: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000) // 3 days ago
+      };
+
+      render(<Post post={daysAgoPost} />);
+      expect(screen.getByText('3d')).toBeInTheDocument();
+    });
+  });
+
 });
