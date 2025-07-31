@@ -85,25 +85,208 @@ describe('Post Component', () => {
     expect(mockRetweetPost).toHaveBeenCalledTimes(1);
   });
 
-  test('formats timestamp correctly', () => {
-    // Create a post with a timestamp we can control
-    const recentPost = {
-      ...mockPost,
-      timestamp: new Date(Date.now() - 60 * 60 * 1000) // 1 hour ago
-    };
+  describe('formatTime function', () => {
+    test('shows "now" for posts less than 1 minute old', () => {
+      const veryRecentPost = {
+        ...mockPost,
+        timestamp: new Date(Date.now() - 30 * 1000) // 30 seconds ago
+      };
 
-    render(<Post post={recentPost} />);
-    
-    // Should show "1h" for a post from 1 hour ago
-    const timeElements = screen.getAllByText(/\d+h/); // Match any text with digits followed by 'h'
-    expect(timeElements.length).toBeGreaterThan(0);
-    
-    // Alternative approach: check that the timestamp element exists
-    const timestampElement = screen.getByText((content, element) => {
-      return element.tagName.toLowerCase() === 'span' && 
-             element.classList.contains('text-gray-500') && 
-             element.classList.contains('text-sm');
+      render(<Post post={veryRecentPost} />);
+      expect(screen.getByText('now')).toBeInTheDocument();
     });
-    expect(timestampElement).toBeInTheDocument();
+
+    test('shows minutes for posts 1-59 minutes old', () => {
+      const minutesPost = {
+        ...mockPost,
+        timestamp: new Date(Date.now() - 30 * 60 * 1000) // 30 minutes ago
+      };
+
+      render(<Post post={minutesPost} />);
+      expect(screen.getByText('30m')).toBeInTheDocument();
+    });
+
+    test('shows hours for posts 1-23 hours old', () => {
+      const hoursPost = {
+        ...mockPost,
+        timestamp: new Date(Date.now() - 5 * 60 * 60 * 1000) // 5 hours ago
+      };
+
+      render(<Post post={hoursPost} />);
+      expect(screen.getByText('5h')).toBeInTheDocument();
+    });
+
+    test('shows days for posts 24+ hours old', () => {
+      const daysPost = {
+        ...mockPost,
+        timestamp: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000) // 3 days ago
+      };
+
+      render(<Post post={daysPost} />);
+      expect(screen.getByText('3d')).toBeInTheDocument();
+    });
+
+    test('handles boundary cases correctly', () => {
+      const oneMinutePost = {
+        ...mockPost,
+        timestamp: new Date(Date.now() - 60 * 1000)
+      };
+      render(<Post post={oneMinutePost} />);
+      expect(screen.getByText('1m')).toBeInTheDocument();
+    });
+
+    test('handles exactly 1 hour boundary', () => {
+      const oneHourPost = {
+        ...mockPost,
+        timestamp: new Date(Date.now() - 60 * 60 * 1000)
+      };
+      render(<Post post={oneHourPost} />);
+      expect(screen.getByText('1h')).toBeInTheDocument();
+    });
+
+    test('handles exactly 1 day boundary', () => {
+      const oneDayPost = {
+        ...mockPost,
+        timestamp: new Date(Date.now() - 24 * 60 * 60 * 1000)
+      };
+      render(<Post post={oneDayPost} />);
+      expect(screen.getByText('1d')).toBeInTheDocument();
+    });
+  });
+
+  describe('edge cases and error handling', () => {
+    test('renders with zero interaction counts', () => {
+      const zeroInteractionsPost = {
+        ...mockPost,
+        likes: 0,
+        retweets: 0,
+        replies: 0
+      };
+
+      render(<Post post={zeroInteractionsPost} />);
+      
+      const zeroElements = screen.getAllByText('0');
+      expect(zeroElements).toHaveLength(3);
+      expect(zeroElements[0]).toBeInTheDocument();
+    });
+
+    test('renders with large interaction counts', () => {
+      const largeInteractionsPost = {
+        ...mockPost,
+        likes: 9999,
+        retweets: 8888,
+        replies: 7777
+      };
+
+      render(<Post post={largeInteractionsPost} />);
+      
+      expect(screen.getByText('9999')).toBeInTheDocument();
+      expect(screen.getByText('8888')).toBeInTheDocument();
+      expect(screen.getByText('7777')).toBeInTheDocument();
+    });
+
+    test('renders with empty content', () => {
+      const emptyContentPost = {
+        ...mockPost,
+        content: ''
+      };
+
+      render(<Post post={emptyContentPost} />);
+      
+      expect(screen.getByRole('heading', { level: 3 })).toHaveTextContent('Test User');
+      expect(screen.getByText('@testuser')).toBeInTheDocument();
+    });
+
+    test('renders with long content', () => {
+      const longContentPost = {
+        ...mockPost,
+        content: 'This is a very long post content that goes on and on and on to test how the component handles lengthy text content that might wrap to multiple lines and still maintains proper formatting and layout.'
+      };
+
+      render(<Post post={longContentPost} />);
+      
+      expect(screen.getByText(longContentPost.content)).toBeInTheDocument();
+    });
+  });
+
+  describe('accessibility and UI interactions', () => {
+    test('buttons have proper accessibility attributes', () => {
+      render(<Post post={mockPost} />);
+      
+      const buttons = screen.getAllByRole('button');
+      expect(buttons).toHaveLength(4);
+      
+      buttons.forEach(button => {
+        expect(button).not.toHaveAttribute('disabled');
+      });
+    });
+
+    test('avatar has proper accessibility label', () => {
+      render(<Post post={mockPost} />);
+      
+      const avatar = screen.getByTestId('avatar-mock');
+      expect(avatar).toBeInTheDocument();
+      expect(avatar).toHaveTextContent('Test User');
+    });
+
+    test('post structure has proper semantic elements', () => {
+      render(<Post post={mockPost} />);
+      
+      const authorHeading = screen.getByRole('heading', { level: 3 });
+      expect(authorHeading).toHaveTextContent('Test User');
+      
+      const contentParagraph = screen.getByText('This is a test post content');
+      expect(contentParagraph.tagName.toLowerCase()).toBe('p');
+    });
+
+    test('interaction buttons have proper hover states', () => {
+      render(<Post post={mockPost} />);
+      
+      const likeButton = screen.getByText('42').closest('button');
+      const retweetButton = screen.getByText('12').closest('button');
+      
+      expect(likeButton).toHaveClass('hover:text-red-500');
+      expect(retweetButton).toHaveClass('hover:text-green-500');
+    });
+  });
+
+  describe('context integration', () => {
+    test('handles context functions being called multiple times', () => {
+      render(<Post post={mockPost} />);
+      
+      const likeButton = screen.getByText('42').closest('button');
+      
+      fireEvent.click(likeButton);
+      fireEvent.click(likeButton);
+      fireEvent.click(likeButton);
+      
+      expect(mockLikePost).toHaveBeenCalledTimes(3);
+      expect(mockLikePost).toHaveBeenCalledWith(mockPost.id);
+    });
+
+    test('handles retweet function being called multiple times', () => {
+      render(<Post post={mockPost} />);
+      
+      const retweetButton = screen.getByText('12').closest('button');
+      
+      fireEvent.click(retweetButton);
+      fireEvent.click(retweetButton);
+      
+      expect(mockRetweetPost).toHaveBeenCalledTimes(2);
+      expect(mockRetweetPost).toHaveBeenCalledWith(mockPost.id);
+    });
+
+    test('does not call context functions for non-interactive buttons', () => {
+      render(<Post post={mockPost} />);
+      
+      const replyButton = screen.getByText('5').closest('button');
+      const shareButton = screen.getAllByRole('button')[3];
+      
+      fireEvent.click(replyButton);
+      fireEvent.click(shareButton);
+      
+      expect(mockLikePost).not.toHaveBeenCalled();
+      expect(mockRetweetPost).not.toHaveBeenCalled();
+    });
   });
 });
