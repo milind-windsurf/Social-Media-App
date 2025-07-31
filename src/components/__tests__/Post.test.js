@@ -8,8 +8,19 @@ jest.mock('../Avatar', () => ({
   Avatar: ({ name }) => <div data-testid="avatar-mock">{name}</div>
 }));
 
+/**
+ * Comprehensive unit tests for the Post component
+ * 
+ * This test suite covers:
+ * - Basic rendering and UI elements
+ * - User interactions (like, retweet buttons)
+ * - formatTime function edge cases and boundary conditions
+ * - Error handling for malformed or missing data
+ * - Accessibility and styling validation
+ * - Edge cases for user interactions and content display
+ */
 describe('Post Component', () => {
-  // Sample post data for testing
+  // Sample post data for testing - represents a typical social media post
   const mockPost = {
     id: 1,
     author: {
@@ -107,8 +118,19 @@ describe('Post Component', () => {
     expect(timestampElement).toBeInTheDocument();
   });
 
+  /**
+   * Test suite for formatTime function edge cases
+   * 
+   * The formatTime function converts timestamps to human-readable relative time strings.
+   * These tests ensure all time ranges and edge cases are handled correctly:
+   * - "now" for posts < 1 minute old
+   * - "Xm" for posts < 1 hour old  
+   * - "Xh" for posts < 24 hours old
+   * - "Xd" for posts >= 24 hours old
+   */
   describe('formatTime function edge cases', () => {
     test('shows "now" for posts less than 1 minute old', () => {
+      // Create a post that's only 30 seconds old to trigger the "now" display
       const veryRecentPost = {
         ...mockPost,
         timestamp: new Date(Date.now() - 30 * 1000) // 30 seconds ago
@@ -181,12 +203,22 @@ describe('Post Component', () => {
 
       render(<Post post={futurePost} />);
       
-      // Should show "now" for future timestamps (negative diff results in 0 minutes)
+      // Future timestamps should default to "now" (negative diff results in 0 minutes)
       expect(screen.getByText('now')).toBeInTheDocument();
     });
   });
 
+  /**
+   * Test suite for error handling and prop validation
+   * 
+   * These tests ensure the Post component gracefully handles:
+   * - Missing or undefined props
+   * - Malformed post data
+   * - Invalid timestamp values
+   * - Edge cases that could cause runtime errors
+   */
   describe('error handling and prop validation', () => {
+    // This ensures the component fails gracefully rather than causing runtime errors
     test('handles missing post prop gracefully', () => {
       const consoleError = console.error;
       console.error = jest.fn();
@@ -222,10 +254,10 @@ describe('Post Component', () => {
 
       render(<Post post={postWithoutContent} />);
       
-      // Should render author name in heading
       expect(screen.getByRole('heading', { level: 3 })).toHaveTextContent('Test User');
     });
 
+    // Test that the component displays zero interaction counts correctly
     test('handles post with zero interaction counts', () => {
       const postWithZeroCounts = {
         ...mockPost,
@@ -236,7 +268,7 @@ describe('Post Component', () => {
 
       render(<Post post={postWithZeroCounts} />);
       
-      // Should display zero counts - check for all three zeros
+      // Should display "0" for all interaction counts (replies, retweets, likes)
       const zeroElements = screen.getAllByText('0');
       expect(zeroElements).toHaveLength(3); // replies, retweets, likes
     });
@@ -249,11 +281,18 @@ describe('Post Component', () => {
 
       render(<Post post={postWithInvalidTimestamp} />);
       
-      // Should render with NaN result showing as "NaNd" or similar
       expect(screen.getByRole('heading', { level: 3 })).toHaveTextContent('Test User');
     });
   });
 
+  /**
+   * Test suite for user interaction edge cases
+   * 
+   * These tests validate that user interactions work correctly under various conditions:
+   * - Rapid clicking scenarios (spam clicking)
+   * - Buttons that exist but don't have handlers yet
+   * - Multiple simultaneous interactions
+   */
   describe('interaction edge cases', () => {
     test('handles multiple rapid clicks on like button', () => {
       render(<Post post={mockPost} />);
@@ -264,7 +303,6 @@ describe('Post Component', () => {
       fireEvent.click(likeButton);
       fireEvent.click(likeButton);
       
-      // Should call likePost function 3 times
       expect(mockLikePost).toHaveBeenCalledTimes(3);
       expect(mockLikePost).toHaveBeenCalledWith(mockPost.id);
     });
@@ -278,7 +316,6 @@ describe('Post Component', () => {
       fireEvent.click(retweetButton);
       fireEvent.click(retweetButton);
       
-      // Should call retweetPost function 3 times
       expect(mockRetweetPost).toHaveBeenCalledTimes(3);
       expect(mockRetweetPost).toHaveBeenCalledWith(mockPost.id);
     });
@@ -290,7 +327,7 @@ describe('Post Component', () => {
       
       fireEvent.click(replyButton);
       
-      // Should not call any context functions
+      // Reply functionality not implemented yet, so shouldn't call context functions
       expect(mockLikePost).not.toHaveBeenCalled();
       expect(mockRetweetPost).not.toHaveBeenCalled();
     });
@@ -303,22 +340,30 @@ describe('Post Component', () => {
       
       fireEvent.click(shareButton);
       
-      // Should not call any context functions
+      // Share functionality not implemented yet, so shouldn't call context functions
       expect(mockLikePost).not.toHaveBeenCalled();
       expect(mockRetweetPost).not.toHaveBeenCalled();
     });
   });
 
+  /**
+   * Test suite for accessibility and UI element validation
+   * 
+   * These tests ensure the Post component:
+   * - Renders all required UI elements correctly
+   * - Applies proper CSS classes for styling consistency
+   * - Handles edge cases in content display (long text, special characters)
+   * - Maintains accessibility standards with proper semantic markup
+   */
   describe('accessibility and UI elements', () => {
     test('renders all required UI elements', () => {
       render(<Post post={mockPost} />);
       
-      // Check for author name in heading
+      // Verify author information is displayed with proper semantic markup
       expect(screen.getByRole('heading', { level: 3 })).toHaveTextContent('Test User');
       expect(screen.getByText('@testuser')).toBeInTheDocument();
       expect(screen.getByText('This is a test post content')).toBeInTheDocument();
       
-      // Check for interaction counts
       expect(screen.getByText('42')).toBeInTheDocument(); // likes
       expect(screen.getByText('12')).toBeInTheDocument(); // retweets
       expect(screen.getByText('5')).toBeInTheDocument(); // replies
@@ -333,7 +378,6 @@ describe('Post Component', () => {
       const postContainer = document.querySelector('.border-b.border-gray-200.px-6.py-4');
       expect(postContainer).toBeInTheDocument();
       
-      // Check author name styling - find the h3 element specifically
       const authorName = screen.getByRole('heading', { level: 3 });
       expect(authorName).toHaveClass('font-display', 'font-bold', 'text-gray-900');
       
@@ -357,6 +401,7 @@ describe('Post Component', () => {
       })).toBeInTheDocument();
     });
 
+    // Test that the component handles special characters and emojis correctly
     test('renders with special characters in content', () => {
       const postWithSpecialChars = {
         ...mockPost,
@@ -365,6 +410,7 @@ describe('Post Component', () => {
 
       render(<Post post={postWithSpecialChars} />);
       
+      // Verify special characters and emojis render correctly
       expect(screen.getByText(postWithSpecialChars.content)).toBeInTheDocument();
     });
   });
