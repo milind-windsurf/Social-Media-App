@@ -249,7 +249,7 @@ describe('Post Component', () => {
       fireEvent.click(likeButton);
       fireEvent.click(likeButton);
       
-      // Should be called 3 times
+      // Should be called 3 times - no debouncing implemented
       expect(mockLikePost).toHaveBeenCalledTimes(3);
       expect(mockLikePost).toHaveBeenCalledWith(mockPost.id);
     });
@@ -263,7 +263,7 @@ describe('Post Component', () => {
       fireEvent.click(retweetButton);
       fireEvent.click(retweetButton);
       
-      // Should be called 3 times
+      // Should be called 3 times - no debouncing implemented
       expect(mockRetweetPost).toHaveBeenCalledTimes(3);
       expect(mockRetweetPost).toHaveBeenCalledWith(mockPost.id);
     });
