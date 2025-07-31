@@ -106,4 +106,95 @@ describe('Post Component', () => {
     });
     expect(timestampElement).toBeInTheDocument();
   });
+
+  describe('formatTime function edge cases', () => {
+    test('shows "now" for posts less than 1 minute old', () => {
+      const veryRecentPost = {
+        ...mockPost,
+        timestamp: new Date(Date.now() - 30 * 1000) // 30 seconds ago
+      };
+      
+      render(<Post post={veryRecentPost} />);
+      expect(screen.getByText('now')).toBeInTheDocument();
+    });
+
+    test('shows minutes for posts less than 1 hour old', () => {
+      const minutesAgoPost = {
+        ...mockPost,
+        timestamp: new Date(Date.now() - 45 * 60 * 1000) // 45 minutes ago
+      };
+      
+      render(<Post post={minutesAgoPost} />);
+      expect(screen.getByText('45m')).toBeInTheDocument();
+    });
+
+    test('shows hours for posts less than 24 hours old', () => {
+      const hoursAgoPost = {
+        ...mockPost,
+        timestamp: new Date(Date.now() - 12 * 60 * 60 * 1000) // 12 hours ago
+      };
+      
+      render(<Post post={hoursAgoPost} />);
+      expect(screen.getByText('12h')).toBeInTheDocument();
+    });
+
+    test('shows days for posts older than 24 hours', () => {
+      const daysAgoPost = {
+        ...mockPost,
+        timestamp: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000) // 3 days ago
+      };
+      
+      render(<Post post={daysAgoPost} />);
+      expect(screen.getByText('3d')).toBeInTheDocument();
+    });
+
+    test('handles boundary case at exactly 1 minute', () => {
+      const exactlyOneMinutePost = {
+        ...mockPost,
+        timestamp: new Date(Date.now() - 60 * 1000) // exactly 1 minute ago
+      };
+      
+      render(<Post post={exactlyOneMinutePost} />);
+      expect(screen.getByText('1m')).toBeInTheDocument();
+    });
+
+    test('handles boundary case at exactly 1 hour', () => {
+      const exactlyOneHourPost = {
+        ...mockPost,
+        timestamp: new Date(Date.now() - 60 * 60 * 1000) // exactly 1 hour ago
+      };
+      
+      render(<Post post={exactlyOneHourPost} />);
+      expect(screen.getByText('1h')).toBeInTheDocument();
+    });
+
+    test('handles boundary case at exactly 24 hours', () => {
+      const exactlyOneDayPost = {
+        ...mockPost,
+        timestamp: new Date(Date.now() - 24 * 60 * 60 * 1000) // exactly 24 hours ago
+      };
+      
+      render(<Post post={exactlyOneDayPost} />);
+      expect(screen.getByText('1d')).toBeInTheDocument();
+    });
+  });
+
+  describe('inactive button rendering', () => {
+    test('renders reply button without handler', () => {
+      render(<Post post={mockPost} />);
+      const replyButton = screen.getByText('5').closest('button');
+      expect(replyButton).toBeInTheDocument();
+      expect(replyButton).toHaveClass('text-gray-500', 'hover:text-blue-500');
+    });
+
+    test('renders share button without handler', () => {
+      render(<Post post={mockPost} />);
+      const shareButtons = screen.getAllByRole('button');
+      const shareButton = shareButtons.find(button => 
+        button.querySelector('svg path[d*="8.684 13.342"]')
+      );
+      expect(shareButton).toBeInTheDocument();
+      expect(shareButton).toHaveClass('text-gray-500', 'hover:text-blue-500');
+    });
+  });
 });
