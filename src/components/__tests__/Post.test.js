@@ -85,25 +85,140 @@ describe('Post Component', () => {
     expect(mockRetweetPost).toHaveBeenCalledTimes(1);
   });
 
-  test('formats timestamp correctly', () => {
-    // Create a post with a timestamp we can control
-    const recentPost = {
-      ...mockPost,
-      timestamp: new Date(Date.now() - 60 * 60 * 1000) // 1 hour ago
-    };
-
-    render(<Post post={recentPost} />);
-    
-    // Should show "1h" for a post from 1 hour ago
-    const timeElements = screen.getAllByText(/\d+h/); // Match any text with digits followed by 'h'
-    expect(timeElements.length).toBeGreaterThan(0);
-    
-    // Alternative approach: check that the timestamp element exists
-    const timestampElement = screen.getByText((content, element) => {
-      return element.tagName.toLowerCase() === 'span' && 
-             element.classList.contains('text-gray-500') && 
-             element.classList.contains('text-sm');
+  describe('formatTime function', () => {
+    test('returns "now" for timestamps less than 1 minute ago', () => {
+      const recentPost = {
+        ...mockPost,
+        timestamp: new Date(Date.now() - 30000) // 30 seconds ago
+      };
+      render(<Post post={recentPost} />);
+      expect(screen.getByText('now')).toBeInTheDocument();
     });
-    expect(timestampElement).toBeInTheDocument();
+
+    test('formats minutes correctly for timestamps less than 1 hour', () => {
+      const minutesAgoPost = {
+        ...mockPost,
+        timestamp: new Date(Date.now() - 45 * 60 * 1000) // 45 minutes ago
+      };
+      render(<Post post={minutesAgoPost} />);
+      expect(screen.getByText('45m')).toBeInTheDocument();
+    });
+
+    test('formats hours correctly for timestamps less than 24 hours', () => {
+      const hoursAgoPost = {
+        ...mockPost,
+        timestamp: new Date(Date.now() - 5 * 60 * 60 * 1000) // 5 hours ago
+      };
+      render(<Post post={hoursAgoPost} />);
+      expect(screen.getByText('5h')).toBeInTheDocument();
+    });
+
+    test('formats days correctly for timestamps more than 24 hours', () => {
+      const daysAgoPost = {
+        ...mockPost,
+        timestamp: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000) // 3 days ago
+      };
+      render(<Post post={daysAgoPost} />);
+      expect(screen.getByText('3d')).toBeInTheDocument();
+    });
+
+    test('handles edge case of exactly 1 minute ago', () => {
+      const oneMinuteAgoPost = {
+        ...mockPost,
+        timestamp: new Date(Date.now() - 60 * 1000) // exactly 1 minute ago
+      };
+      render(<Post post={oneMinuteAgoPost} />);
+      expect(screen.getByText('1m')).toBeInTheDocument();
+    });
+
+    test('handles edge case of exactly 1 hour ago', () => {
+      const oneHourAgoPost = {
+        ...mockPost,
+        timestamp: new Date(Date.now() - 60 * 60 * 1000) // exactly 1 hour ago
+      };
+      render(<Post post={oneHourAgoPost} />);
+      expect(screen.getByText('1h')).toBeInTheDocument();
+    });
+
+    test('handles edge case of exactly 24 hours ago', () => {
+      const oneDayAgoPost = {
+        ...mockPost,
+        timestamp: new Date(Date.now() - 24 * 60 * 60 * 1000) // exactly 24 hours ago
+      };
+      render(<Post post={oneDayAgoPost} />);
+      expect(screen.getByText('1d')).toBeInTheDocument();
+    });
+  });
+
+  describe('Post Component Edge Cases', () => {
+    test('handles missing author data gracefully', () => {
+      const postWithMissingAuthor = {
+        ...mockPost,
+        author: { name: '', username: '' }
+      };
+      render(<Post post={postWithMissingAuthor} />);
+      expect(screen.getByText('@')).toBeInTheDocument();
+    });
+
+    test('handles zero interaction counts', () => {
+      const postWithZeroCounts = {
+        ...mockPost,
+        likes: 0,
+        retweets: 0,
+        replies: 0
+      };
+      render(<Post post={postWithZeroCounts} />);
+      const zeroElements = screen.getAllByText('0');
+      expect(zeroElements).toHaveLength(3);
+    });
+
+    test('handles very large interaction counts', () => {
+      const postWithLargeCounts = {
+        ...mockPost,
+        likes: 999999,
+        retweets: 888888,
+        replies: 777777
+      };
+      render(<Post post={postWithLargeCounts} />);
+      expect(screen.getByText('999999')).toBeInTheDocument();
+      expect(screen.getByText('888888')).toBeInTheDocument();
+      expect(screen.getByText('777777')).toBeInTheDocument();
+    });
+
+    test('handles empty post content', () => {
+      const postWithEmptyContent = {
+        ...mockPost,
+        content: ''
+      };
+      render(<Post post={postWithEmptyContent} />);
+      expect(screen.getByText((content, element) => {
+        return content === 'Test User' && element.tagName.toLowerCase() === 'h3';
+      })).toBeInTheDocument();
+    });
+
+    test('handles very long post content', () => {
+      const longContent = 'This is a very long post content that goes on and on and on to test how the component handles extremely long text content that might wrap multiple lines and potentially cause layout issues if not handled properly.';
+      const postWithLongContent = {
+        ...mockPost,
+        content: longContent
+      };
+      render(<Post post={postWithLongContent} />);
+      expect(screen.getByText(longContent)).toBeInTheDocument();
+    });
+
+    test('handles special characters in author name and username', () => {
+      const postWithSpecialChars = {
+        ...mockPost,
+        author: {
+          name: 'Test User-O\'Connor',
+          username: 'test_user.123'
+        }
+      };
+      render(<Post post={postWithSpecialChars} />);
+      expect(screen.getByText((content, element) => {
+        return content === 'Test User-O\'Connor' && element.tagName.toLowerCase() === 'h3';
+      })).toBeInTheDocument();
+      expect(screen.getByText('@test_user.123')).toBeInTheDocument();
+    });
   });
 });
