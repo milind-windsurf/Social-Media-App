@@ -106,4 +106,279 @@ describe('Post Component', () => {
     });
     expect(timestampElement).toBeInTheDocument();
   });
+
+  describe('formatTime function', () => {
+    beforeEach(() => {
+      jest.spyOn(console, 'log').mockImplementation(() => {});
+    });
+
+    afterEach(() => {
+      console.log.mockRestore();
+    });
+
+    test('returns "now" for timestamps less than 1 minute ago', () => {
+      const recentPost = {
+        ...mockPost,
+        timestamp: new Date(Date.now() - 30000) // 30 seconds ago
+      };
+
+      render(<Post post={recentPost} />);
+      expect(screen.getByText('now')).toBeInTheDocument();
+      expect(console.log).toHaveBeenCalledWith('hello!');
+    });
+
+    test('formats minutes correctly', () => {
+      const minutesPost = {
+        ...mockPost,
+        timestamp: new Date(Date.now() - 5 * 60 * 1000) // 5 minutes ago
+      };
+
+      render(<Post post={minutesPost} />);
+      expect(screen.getByText('5m')).toBeInTheDocument();
+    });
+
+    test('formats hours correctly', () => {
+      const hoursPost = {
+        ...mockPost,
+        timestamp: new Date(Date.now() - 3 * 60 * 60 * 1000) // 3 hours ago
+      };
+
+      render(<Post post={hoursPost} />);
+      expect(screen.getByText('3h')).toBeInTheDocument();
+    });
+
+    test('formats days correctly', () => {
+      const daysPost = {
+        ...mockPost,
+        timestamp: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000) // 2 days ago
+      };
+
+      render(<Post post={daysPost} />);
+      expect(screen.getByText('2d')).toBeInTheDocument();
+    });
+
+    test('handles edge case of exactly 1 minute', () => {
+      const exactMinutePost = {
+        ...mockPost,
+        timestamp: new Date(Date.now() - 60 * 1000) // exactly 1 minute ago
+      };
+
+      render(<Post post={exactMinutePost} />);
+      expect(screen.getByText('1m')).toBeInTheDocument();
+    });
+
+    test('handles edge case of exactly 1 hour', () => {
+      const exactHourPost = {
+        ...mockPost,
+        timestamp: new Date(Date.now() - 60 * 60 * 1000) // exactly 1 hour ago
+      };
+
+      render(<Post post={exactHourPost} />);
+      expect(screen.getByText('1h')).toBeInTheDocument();
+    });
+
+    test('handles edge case of exactly 1 day', () => {
+      const exactDayPost = {
+        ...mockPost,
+        timestamp: new Date(Date.now() - 24 * 60 * 60 * 1000) // exactly 1 day ago
+      };
+
+      render(<Post post={exactDayPost} />);
+      expect(screen.getByText('1d')).toBeInTheDocument();
+    });
+  });
+
+  describe('Error handling and edge cases', () => {
+    test('handles missing author name gracefully', () => {
+      const postWithoutName = {
+        ...mockPost,
+        author: {
+          ...mockPost.author,
+          name: ''
+        }
+      };
+
+      render(<Post post={postWithoutName} />);
+      expect(screen.getByTestId('avatar-mock')).toBeInTheDocument();
+    });
+
+    test('handles missing author username gracefully', () => {
+      const postWithoutUsername = {
+        ...mockPost,
+        author: {
+          ...mockPost.author,
+          username: ''
+        }
+      };
+
+      render(<Post post={postWithoutUsername} />);
+      expect(screen.getByText('@')).toBeInTheDocument();
+    });
+
+    test('handles empty content', () => {
+      const emptyContentPost = {
+        ...mockPost,
+        content: ''
+      };
+
+      render(<Post post={emptyContentPost} />);
+      expect(screen.getByTestId('avatar-mock')).toBeInTheDocument();
+    });
+
+    test('handles zero interaction counts', () => {
+      const zeroInteractionsPost = {
+        ...mockPost,
+        likes: 0,
+        retweets: 0,
+        replies: 0
+      };
+
+      render(<Post post={zeroInteractionsPost} />);
+      expect(screen.getAllByText('0')).toHaveLength(3);
+    });
+
+    test('handles large interaction counts', () => {
+      const largeInteractionsPost = {
+        ...mockPost,
+        likes: 9999,
+        retweets: 8888,
+        replies: 7777
+      };
+
+      render(<Post post={largeInteractionsPost} />);
+      expect(screen.getByText('9999')).toBeInTheDocument();
+      expect(screen.getByText('8888')).toBeInTheDocument();
+      expect(screen.getByText('7777')).toBeInTheDocument();
+    });
+
+    test('handles very long content', () => {
+      const longContentPost = {
+        ...mockPost,
+        content: 'A'.repeat(500)
+      };
+
+      render(<Post post={longContentPost} />);
+      expect(screen.getByText('A'.repeat(500))).toBeInTheDocument();
+    });
+
+    test('handles special characters in content', () => {
+      const specialCharPost = {
+        ...mockPost,
+        content: 'Test with émojis 🚀 and special chars: @#$%^&*()'
+      };
+
+      render(<Post post={specialCharPost} />);
+      expect(screen.getByText('Test with émojis 🚀 and special chars: @#$%^&*()')).toBeInTheDocument();
+    });
+  });
+
+  describe('Button interactions and accessibility', () => {
+    test('like button has proper accessibility attributes', () => {
+      render(<Post post={mockPost} />);
+      
+      const likeButton = screen.getByText('42').closest('button');
+      expect(likeButton).toBeInTheDocument();
+      expect(likeButton).toHaveClass('hover:text-red-500');
+    });
+
+    test('retweet button has proper accessibility attributes', () => {
+      render(<Post post={mockPost} />);
+      
+      const retweetButton = screen.getByText('12').closest('button');
+      expect(retweetButton).toBeInTheDocument();
+      expect(retweetButton).toHaveClass('hover:text-green-500');
+    });
+
+    test('reply button renders correctly', () => {
+      render(<Post post={mockPost} />);
+      
+      const replyButton = screen.getByText('5').closest('button');
+      expect(replyButton).toBeInTheDocument();
+      expect(replyButton).toHaveClass('hover:text-blue-500');
+    });
+
+    test('share button renders correctly', () => {
+      render(<Post post={mockPost} />);
+      
+      const buttons = screen.getAllByRole('button');
+      const shareButton = buttons[buttons.length - 1];
+      expect(shareButton).toBeInTheDocument();
+    });
+
+    test('multiple clicks on like button call likePost multiple times', () => {
+      render(<Post post={mockPost} />);
+      
+      const likeButton = screen.getByText('42').closest('button');
+      fireEvent.click(likeButton);
+      fireEvent.click(likeButton);
+      fireEvent.click(likeButton);
+      
+      expect(mockLikePost).toHaveBeenCalledTimes(3);
+      expect(mockLikePost).toHaveBeenCalledWith(mockPost.id);
+    });
+
+    test('multiple clicks on retweet button call retweetPost multiple times', () => {
+      render(<Post post={mockPost} />);
+      
+      const retweetButton = screen.getByText('12').closest('button');
+      fireEvent.click(retweetButton);
+      fireEvent.click(retweetButton);
+      
+      expect(mockRetweetPost).toHaveBeenCalledTimes(2);
+      expect(mockRetweetPost).toHaveBeenCalledWith(mockPost.id);
+    });
+
+    test('buttons maintain hover states', () => {
+      render(<Post post={mockPost} />);
+      
+      const likeButton = screen.getByText('42').closest('button');
+      const retweetButton = screen.getByText('12').closest('button');
+      const replyButton = screen.getByText('5').closest('button');
+      
+      expect(likeButton).toHaveClass('transition-colors');
+      expect(retweetButton).toHaveClass('transition-colors');
+      expect(replyButton).toHaveClass('transition-colors');
+    });
+  });
+
+  describe('Component structure and styling', () => {
+    test('applies correct CSS classes for layout', () => {
+      render(<Post post={mockPost} />);
+      
+      const postContainer = screen.getByText((content, element) => {
+        return content === 'Test User' && element.tagName.toLowerCase() === 'h3';
+      }).closest('div').parentElement.parentElement.parentElement;
+      expect(postContainer).toHaveClass('border-b', 'border-gray-200', 'px-6', 'py-4');
+    });
+
+    test('author name has correct styling', () => {
+      render(<Post post={mockPost} />);
+      
+      const authorName = screen.getByText((content, element) => {
+        return content === 'Test User' && element.tagName.toLowerCase() === 'h3';
+      });
+      expect(authorName).toHaveClass('font-display', 'font-bold', 'text-gray-900');
+    });
+
+    test('username has correct styling', () => {
+      render(<Post post={mockPost} />);
+      
+      const username = screen.getByText('@testuser');
+      expect(username).toHaveClass('text-gray-500', 'font-mono');
+    });
+
+    test('post content has correct styling', () => {
+      render(<Post post={mockPost} />);
+      
+      const content = screen.getByText('This is a test post content');
+      expect(content).toHaveClass('text-gray-900', 'text-base', 'text-body');
+    });
+
+    test('renders all required SVG icons', () => {
+      render(<Post post={mockPost} />);
+      
+      const svgElements = document.querySelectorAll('svg');
+      expect(svgElements.length).toBeGreaterThanOrEqual(4);
+    });
+  });
 });
