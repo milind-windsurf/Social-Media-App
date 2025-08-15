@@ -23,7 +23,6 @@ export const Post = ({ post }) => {
     const hours = Math.floor(diff / 3600000);
     const days = Math.floor(diff / 86400000);
 
-    console.log('hello!');
 
     if (minutes < 1) return 'now';
     if (minutes < 60) return `${minutes}m`;
