@@ -1,3 +1,15 @@
+# Social Media App
+
+A modern Twitter-like social media timeline application built with Next.js 14. This app provides users with a clean, responsive interface to view and interact with social media content.
+
+## Features
+
+- **Timeline Feed**: Browse posts in a chronological social media feed
+- **Post Composition**: Create and share new posts with the community
+- **Content Exploration**: Discover new content and trending topics
+- **Messages & Notifications**: Stay connected with direct messaging and real-time notifications
+- **Responsive Design**: Optimized for both desktop and mobile experiences
+
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
 
 ## Getting Started
