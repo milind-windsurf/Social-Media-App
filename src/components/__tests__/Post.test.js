@@ -85,7 +85,7 @@ describe('Post Component', () => {
     expect(mockRetweetPost).toHaveBeenCalledTimes(1);
   });
 
-  test('formats timestamp correctly', () => {
+  test('formats timestamp correctly for hours', () => {
     // Create a post with a timestamp we can control
     const recentPost = {
       ...mockPost,
@@ -99,6 +99,129 @@ describe('Post Component', () => {
     expect(timeElements.length).toBeGreaterThan(0);
     
     // Alternative approach: check that the timestamp element exists
+    const timestampElement = screen.getByText((content, element) => {
+      return element.tagName.toLowerCase() === 'span' && 
+             element.classList.contains('text-gray-500') && 
+             element.classList.contains('text-sm');
+    });
+    expect(timestampElement).toBeInTheDocument();
+  });
+
+  test('formats timestamp as "now" for very recent posts', () => {
+    // Create a post with a timestamp less than 1 minute ago
+    const veryRecentPost = {
+      ...mockPost,
+      timestamp: new Date(Date.now() - 30 * 1000) // 30 seconds ago
+    };
+
+    render(<Post post={veryRecentPost} />);
+    
+    // Should show "now" for a post from 30 seconds ago
+    expect(screen.getByText('now')).toBeInTheDocument();
+  });
+
+  test('formats timestamp correctly for minutes', () => {
+    // Create a post with a timestamp in minutes
+    const minutesPost = {
+      ...mockPost,
+      timestamp: new Date(Date.now() - 30 * 60 * 1000) // 30 minutes ago
+    };
+
+    render(<Post post={minutesPost} />);
+    
+    // Should show "30m" for a post from 30 minutes ago
+    expect(screen.getByText('30m')).toBeInTheDocument();
+  });
+
+  test('formats timestamp correctly for days', () => {
+    // Create a post with a timestamp in days
+    const daysPost = {
+      ...mockPost,
+      timestamp: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000) // 2 days ago
+    };
+
+    render(<Post post={daysPost} />);
+    
+    // Should show "2d" for a post from 2 days ago
+    expect(screen.getByText('2d')).toBeInTheDocument();
+  });
+
+  test('handles edge case at 1 minute boundary', () => {
+    // Create a post exactly at 1 minute boundary
+    const boundaryPost = {
+      ...mockPost,
+      timestamp: new Date(Date.now() - 60 * 1000) // exactly 1 minute ago
+    };
+
+    render(<Post post={boundaryPost} />);
+    
+    // Should show "1m" for a post from exactly 1 minute ago
+    expect(screen.getByText('1m')).toBeInTheDocument();
+  });
+
+  test('handles edge case at 24 hour boundary', () => {
+    // Create a post exactly at 24 hour boundary
+    const boundaryPost = {
+      ...mockPost,
+      timestamp: new Date(Date.now() - 24 * 60 * 60 * 1000) // exactly 24 hours ago
+    };
+
+    render(<Post post={boundaryPost} />);
+    
+    // Should show "1d" for a post from exactly 24 hours ago
+    expect(screen.getByText('1d')).toBeInTheDocument();
+  });
+
+  test('handles malformed post data gracefully', () => {
+    const malformedPost = {
+      id: 1,
+      author: {
+        name: '',
+        username: ''
+      },
+      content: '',
+      timestamp: new Date(),
+      likes: 0,
+      retweets: 0,
+      replies: 0
+    };
+
+    render(<Post post={malformedPost} />);
+    
+    // Should still render without crashing
+    expect(screen.getByTestId('avatar-mock')).toBeInTheDocument();
+    expect(screen.getAllByText('0')).toHaveLength(3); // replies, retweets, and likes counts
+  });
+
+  test('handles missing post properties', () => {
+    const minimalPost = {
+      id: 1,
+      author: {
+        name: 'Test',
+        username: 'test'
+      },
+      content: 'Test content',
+      timestamp: new Date(),
+      likes: undefined,
+      retweets: undefined,
+      replies: undefined
+    };
+
+    render(<Post post={minimalPost} />);
+    
+    // Should render without crashing even with undefined counts
+    expect(screen.getByText('Test content')).toBeInTheDocument();
+  });
+
+  test('handles future timestamp gracefully', () => {
+    const futurePost = {
+      ...mockPost,
+      timestamp: new Date(Date.now() + 60 * 60 * 1000) // 1 hour in future
+    };
+
+    render(<Post post={futurePost} />);
+    
+    // Should handle future dates gracefully (likely show "now" or negative time)
     const timestampElement = screen.getByText((content, element) => {
       return element.tagName.toLowerCase() === 'span' && 
              element.classList.contains('text-gray-500') && 
