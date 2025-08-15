@@ -106,4 +106,225 @@ describe('Post Component', () => {
     });
     expect(timestampElement).toBeInTheDocument();
   });
+
+  describe('formatTime function edge cases', () => {
+    test('shows "now" for timestamps less than 1 minute ago', () => {
+      const recentPost = {
+        ...mockPost,
+        timestamp: new Date(Date.now() - 30000) // 30 seconds ago
+      };
+      
+      render(<Post post={recentPost} />);
+      expect(screen.getByText('now')).toBeInTheDocument();
+    });
+
+    test('shows minutes for timestamps between 1-59 minutes ago', () => {
+      const minutesPost = {
+        ...mockPost,
+        timestamp: new Date(Date.now() - 5 * 60 * 1000) // 5 minutes ago
+      };
+      
+      render(<Post post={minutesPost} />);
+      expect(screen.getByText('5m')).toBeInTheDocument();
+    });
+
+    test('shows hours for timestamps between 1-23 hours ago', () => {
+      const hoursPost = {
+        ...mockPost,
+        timestamp: new Date(Date.now() - 3 * 60 * 60 * 1000) // 3 hours ago
+      };
+      
+      render(<Post post={hoursPost} />);
+      expect(screen.getByText('3h')).toBeInTheDocument();
+    });
+
+    test('shows days for timestamps 24+ hours ago', () => {
+      const daysPost = {
+        ...mockPost,
+        timestamp: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000) // 2 days ago
+      };
+      
+      render(<Post post={daysPost} />);
+      expect(screen.getByText('2d')).toBeInTheDocument();
+    });
+
+    test('handles boundary condition: exactly 1 minute ago', () => {
+      const boundaryPost = {
+        ...mockPost,
+        timestamp: new Date(Date.now() - 60 * 1000) // exactly 1 minute ago
+      };
+      
+      render(<Post post={boundaryPost} />);
+      expect(screen.getByText('1m')).toBeInTheDocument();
+    });
+
+    test('handles boundary condition: exactly 1 hour ago', () => {
+      const boundaryPost = {
+        ...mockPost,
+        timestamp: new Date(Date.now() - 60 * 60 * 1000) // exactly 1 hour ago
+      };
+      
+      render(<Post post={boundaryPost} />);
+      expect(screen.getByText('1h')).toBeInTheDocument();
+    });
+
+    test('handles boundary condition: exactly 1 day ago', () => {
+      const boundaryPost = {
+        ...mockPost,
+        timestamp: new Date(Date.now() - 24 * 60 * 60 * 1000) // exactly 1 day ago
+      };
+      
+      render(<Post post={boundaryPost} />);
+      expect(screen.getByText('1d')).toBeInTheDocument();
+    });
+
+    test('handles very large time differences', () => {
+      const oldPost = {
+        ...mockPost,
+        timestamp: new Date(Date.now() - 365 * 24 * 60 * 60 * 1000) // 1 year ago
+      };
+      
+      render(<Post post={oldPost} />);
+      expect(screen.getByText('365d')).toBeInTheDocument();
+    });
+  });
+
+  describe('error handling and edge cases', () => {
+    test('handles post with missing author name gracefully', () => {
+      const postWithoutName = {
+        ...mockPost,
+        author: {
+          ...mockPost.author,
+          name: undefined
+        }
+      };
+      
+      render(<Post post={postWithoutName} />);
+      // Should still render without crashing
+      expect(screen.getByText('This is a test post content')).toBeInTheDocument();
+    });
+
+    test('handles post with missing author username gracefully', () => {
+      const postWithoutUsername = {
+        ...mockPost,
+        author: {
+          ...mockPost.author,
+          username: undefined
+        }
+      };
+      
+      render(<Post post={postWithoutUsername} />);
+      expect(screen.getByText('This is a test post content')).toBeInTheDocument();
+    });
+
+    test('handles post with zero interaction counts', () => {
+      const zeroInteractionPost = {
+        ...mockPost,
+        likes: 0,
+        retweets: 0,
+        replies: 0
+      };
+      
+      render(<Post post={zeroInteractionPost} />);
+      const zeroElements = screen.getAllByText('0');
+      expect(zeroElements).toHaveLength(3); // replies, retweets, likes
+    });
+
+    test('handles post with very high interaction counts', () => {
+      const highInteractionPost = {
+        ...mockPost,
+        likes: 999999,
+        retweets: 888888,
+        replies: 777777
+      };
+      
+      render(<Post post={highInteractionPost} />);
+      expect(screen.getByText('999999')).toBeInTheDocument();
+      expect(screen.getByText('888888')).toBeInTheDocument();
+      expect(screen.getByText('777777')).toBeInTheDocument();
+    });
+
+    test('handles empty post content', () => {
+      const emptyContentPost = {
+        ...mockPost,
+        content: ''
+      };
+      
+      render(<Post post={emptyContentPost} />);
+      expect(screen.getByRole('heading', { name: 'Test User' })).toBeInTheDocument();
+      const contentElement = screen.getByText((content, element) => {
+        return element.tagName.toLowerCase() === 'p' && 
+               element.classList.contains('text-body') &&
+               content === '';
+      });
+      expect(contentElement).toBeInTheDocument();
+    });
+
+    test('handles very long post content', () => {
+      const longContentPost = {
+        ...mockPost,
+        content: 'A'.repeat(1000) // Very long content
+      };
+      
+      render(<Post post={longContentPost} />);
+      expect(screen.getByText('A'.repeat(1000))).toBeInTheDocument();
+    });
+  });
+
+  describe('interaction behavior', () => {
+    test('handles multiple rapid clicks on like button', () => {
+      render(<Post post={mockPost} />);
+      
+      const likeButton = screen.getByText('42').closest('button');
+      
+      fireEvent.click(likeButton);
+      fireEvent.click(likeButton);
+      fireEvent.click(likeButton);
+      
+      expect(mockLikePost).toHaveBeenCalledTimes(3);
+      expect(mockLikePost).toHaveBeenCalledWith(mockPost.id);
+    });
+
+    test('handles multiple rapid clicks on retweet button', () => {
+      render(<Post post={mockPost} />);
+      
+      const retweetButton = screen.getByText('12').closest('button');
+      
+      fireEvent.click(retweetButton);
+      fireEvent.click(retweetButton);
+      
+      expect(mockRetweetPost).toHaveBeenCalledTimes(2);
+      expect(mockRetweetPost).toHaveBeenCalledWith(mockPost.id);
+    });
+
+    test('reply and share buttons are rendered but do not have click handlers', () => {
+      render(<Post post={mockPost} />);
+      
+      // Find reply button (first button with the replies count)
+      const replyButton = screen.getByText('5').closest('button');
+      expect(replyButton).toBeInTheDocument();
+      
+      const buttons = screen.getAllByRole('button');
+      const shareButton = buttons[buttons.length - 1];
+      expect(shareButton).toBeInTheDocument();
+      
+      fireEvent.click(replyButton);
+      fireEvent.click(shareButton);
+      
+      expect(mockLikePost).not.toHaveBeenCalled();
+      expect(mockRetweetPost).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('console logging', () => {
+    test('formatTime function logs to console', () => {
+      const consoleSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
+      
+      render(<Post post={mockPost} />);
+      
+      expect(consoleSpy).toHaveBeenCalledWith('hello!');
+      
+      consoleSpy.mockRestore();
+    });
+  });
 });
