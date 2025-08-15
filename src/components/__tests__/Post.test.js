@@ -106,4 +106,165 @@ describe('Post Component', () => {
     });
     expect(timestampElement).toBeInTheDocument();
   });
+
+  describe('formatTime function edge cases', () => {
+    test('returns "now" for timestamps less than 1 minute ago', () => {
+      const recentPost = {
+        ...mockPost,
+        timestamp: new Date(Date.now() - 30000) // 30 seconds ago
+      };
+      
+      render(<Post post={recentPost} />);
+      expect(screen.getByText('now')).toBeInTheDocument();
+    });
+
+    test('returns minutes for timestamps between 1-59 minutes ago', () => {
+      const minutesAgoPost = {
+        ...mockPost,
+        timestamp: new Date(Date.now() - 30 * 60 * 1000) // 30 minutes ago
+      };
+      
+      render(<Post post={minutesAgoPost} />);
+      expect(screen.getByText('30m')).toBeInTheDocument();
+    });
+
+    test('returns hours for timestamps between 1-23 hours ago', () => {
+      const hoursAgoPost = {
+        ...mockPost,
+        timestamp: new Date(Date.now() - 5 * 60 * 60 * 1000) // 5 hours ago
+      };
+      
+      render(<Post post={hoursAgoPost} />);
+      expect(screen.getByText('5h')).toBeInTheDocument();
+    });
+
+    test('returns days for timestamps 24+ hours ago', () => {
+      const daysAgoPost = {
+        ...mockPost,
+        timestamp: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000) // 3 days ago
+      };
+      
+      render(<Post post={daysAgoPost} />);
+      expect(screen.getByText('3d')).toBeInTheDocument();
+    });
+
+    test('handles boundary condition: exactly 1 minute ago', () => {
+      const exactMinutePost = {
+        ...mockPost,
+        timestamp: new Date(Date.now() - 60 * 1000) // exactly 1 minute ago
+      };
+      
+      render(<Post post={exactMinutePost} />);
+      expect(screen.getByText('1m')).toBeInTheDocument();
+    });
+
+    test('handles boundary condition: exactly 1 hour ago', () => {
+      const exactHourPost = {
+        ...mockPost,
+        timestamp: new Date(Date.now() - 60 * 60 * 1000) // exactly 1 hour ago
+      };
+      
+      render(<Post post={exactHourPost} />);
+      expect(screen.getByText('1h')).toBeInTheDocument();
+    });
+
+    test('handles boundary condition: exactly 24 hours ago', () => {
+      const exactDayPost = {
+        ...mockPost,
+        timestamp: new Date(Date.now() - 24 * 60 * 60 * 1000) // exactly 24 hours ago
+      };
+      
+      render(<Post post={exactDayPost} />);
+      expect(screen.getByText('1d')).toBeInTheDocument();
+    });
+  });
+
+  describe('formatTime error handling', () => {
+    test('handles invalid timestamp gracefully', () => {
+      const invalidPost = {
+        ...mockPost,
+        timestamp: new Date('invalid-date')
+      };
+      
+      // Should not throw an error when rendering
+      expect(() => render(<Post post={invalidPost} />)).not.toThrow();
+    });
+
+    test('handles very old timestamps', () => {
+      const veryOldPost = {
+        ...mockPost,
+        timestamp: new Date('2020-01-01') // Very old date
+      };
+      
+      render(<Post post={veryOldPost} />);
+      // Should show days format for very old posts
+      const timeElement = screen.getByText((content, element) => {
+        return element.tagName.toLowerCase() === 'span' && 
+               element.classList.contains('text-gray-500') && 
+               element.classList.contains('text-sm') &&
+               content.includes('d');
+      });
+      expect(timeElement).toBeInTheDocument();
+    });
+  });
+
+  describe('Post component edge cases', () => {
+    test('handles missing post author data gracefully', () => {
+      const postWithMissingAuthor = {
+        ...mockPost,
+        author: {
+          name: '',
+          username: ''
+        }
+      };
+      
+      expect(() => render(<Post post={postWithMissingAuthor} />)).not.toThrow();
+    });
+
+    test('handles zero interaction counts', () => {
+      const postWithZeroCounts = {
+        ...mockPost,
+        likes: 0,
+        retweets: 0,
+        replies: 0
+      };
+      
+      render(<Post post={postWithZeroCounts} />);
+      const zeroElements = screen.getAllByText('0');
+      expect(zeroElements).toHaveLength(3); // Should show 0 for replies, retweets, and likes
+    });
+
+    test('handles very long post content', () => {
+      const longContentPost = {
+        ...mockPost,
+        content: 'A'.repeat(1000) // Very long content
+      };
+      
+      render(<Post post={longContentPost} />);
+      expect(screen.getByText('A'.repeat(1000))).toBeInTheDocument();
+    });
+
+    test('reply button renders but has no click handler', () => {
+      render(<Post post={mockPost} />);
+      
+      const replyButton = screen.getByText('5').closest('button'); // replies count
+      expect(replyButton).toBeInTheDocument();
+      
+      // Should not throw when clicked (no handler attached)
+      expect(() => fireEvent.click(replyButton)).not.toThrow();
+    });
+
+    test('share button renders but has no click handler', () => {
+      render(<Post post={mockPost} />);
+      
+      const shareButtons = screen.getAllByRole('button');
+      const shareButton = shareButtons.find(button => 
+        button.querySelector('svg path[d*="M8.684"]') // Share icon path
+      );
+      expect(shareButton).toBeInTheDocument();
+      
+      // Should not throw when clicked (no handler attached)
+      expect(() => fireEvent.click(shareButton)).not.toThrow();
+    });
+  });
 });
