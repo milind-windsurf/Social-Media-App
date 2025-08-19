@@ -19,11 +19,12 @@ export const Post = ({ post }) => {
   const formatTime = (timestamp) => {
     const now = new Date();
     const diff = now - timestamp;
+    
+    if (isNaN(diff)) return 'now';
+    
     const minutes = Math.floor(diff / 60000);
     const hours = Math.floor(diff / 3600000);
     const days = Math.floor(diff / 86400000);
-
-    console.log('hello!');
 
     if (minutes < 1) return 'now';
     if (minutes < 60) return `${minutes}m`;
