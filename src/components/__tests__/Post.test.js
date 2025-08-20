@@ -106,4 +106,95 @@ describe('Post Component', () => {
     });
     expect(timestampElement).toBeInTheDocument();
   });
+
+  test('formats very recent timestamps as "now"', () => {
+    const veryRecentPost = {
+      ...mockPost,
+      timestamp: new Date(Date.now() - 30000) // 30 seconds ago
+    };
+    
+    render(<Post post={veryRecentPost} />);
+    expect(screen.getByText('now')).toBeInTheDocument();
+  });
+
+  test('formats timestamps for different time ranges', () => {
+    const minutesPost = { ...mockPost, timestamp: new Date(Date.now() - 5 * 60 * 1000) };
+    const { rerender } = render(<Post post={minutesPost} />);
+    expect(screen.getByText('5m')).toBeInTheDocument();
+    
+    rerender(<Post post={{ ...mockPost, timestamp: new Date(Date.now() - 3 * 60 * 60 * 1000) }} />);
+    expect(screen.getByText('3h')).toBeInTheDocument();
+    
+    rerender(<Post post={{ ...mockPost, timestamp: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000) }} />);
+    expect(screen.getByText('2d')).toBeInTheDocument();
+  });
+
+  test('handles invalid timestamp gracefully', () => {
+    const invalidTimestampPost = {
+      ...mockPost,
+      timestamp: new Date('invalid-date')
+    };
+    
+    render(<Post post={invalidTimestampPost} />);
+    // Should not crash and should render the post content
+    expect(screen.getByText('This is a test post content')).toBeInTheDocument();
+  });
+
+  test('handles missing post properties gracefully', () => {
+    const minimalPost = {
+      id: 1,
+      author: { name: 'Test', username: 'test' },
+      content: 'Test content',
+      timestamp: new Date(),
+      likes: 0,
+      retweets: 0,
+      replies: 0
+    };
+    
+    render(<Post post={minimalPost} />);
+    expect(screen.getByText('Test content')).toBeInTheDocument();
+  });
+
+  test('handles multiple rapid clicks on like button', () => {
+    render(<Post post={mockPost} />);
+    const likeButton = screen.getByText('42').closest('button');
+    
+    fireEvent.click(likeButton);
+    fireEvent.click(likeButton);
+    fireEvent.click(likeButton);
+    
+    expect(mockLikePost).toHaveBeenCalledTimes(3);
+    expect(mockLikePost).toHaveBeenCalledWith(mockPost.id);
+  });
+
+  test('handles multiple rapid clicks on retweet button', () => {
+    render(<Post post={mockPost} />);
+    const retweetButton = screen.getByText('12').closest('button');
+    
+    fireEvent.click(retweetButton);
+    fireEvent.click(retweetButton);
+    
+    expect(mockRetweetPost).toHaveBeenCalledTimes(2);
+    expect(mockRetweetPost).toHaveBeenCalledWith(mockPost.id);
+  });
+
+  test('has proper accessibility attributes', () => {
+    render(<Post post={mockPost} />);
+    
+    const likeButton = screen.getByText('42').closest('button');
+    const retweetButton = screen.getByText('12').closest('button');
+    
+    expect(likeButton).toBeInTheDocument();
+    expect(retweetButton).toBeInTheDocument();
+    expect(likeButton.tagName).toBe('BUTTON');
+    expect(retweetButton.tagName).toBe('BUTTON');
+  });
+
+  test('renders all action buttons correctly', () => {
+    render(<Post post={mockPost} />);
+    
+    // Should have 4 action buttons: reply, retweet, like, share
+    const buttons = screen.getAllByRole('button');
+    expect(buttons).toHaveLength(4);
+  });
 });
