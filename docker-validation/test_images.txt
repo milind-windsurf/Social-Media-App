@@ -1,0 +1,11 @@
+# Test images for validation
+adw/adw-mssql
+aia/cpae-tf
+aia/kidan
+aia/opt-eng
+aia/smart-comms
+analytics-cortex/cortex-sf
+analytics-experience/business-listing-automation
+analytics-experience/c360-etl-common
+analytics-experience/container-diff
+analytics-gfg-payments/analytics-gfg-payments-streamlit
