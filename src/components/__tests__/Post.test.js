@@ -8,6 +8,9 @@ jest.mock('../Avatar', () => ({
   Avatar: ({ name }) => <div data-testid="avatar-mock">{name}</div>
 }));
 
+// Mock console.log to test it's being called
+const consoleSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
+
 describe('Post Component', () => {
   // Sample post data for testing
   const mockPost = {
@@ -30,6 +33,7 @@ describe('Post Component', () => {
   beforeEach(() => {
     // Reset mocks before each test
     jest.clearAllMocks();
+    consoleSpy.mockClear();
     
     // Setup default mock implementation
     usePosts.mockReturnValue({
@@ -85,25 +89,213 @@ describe('Post Component', () => {
     expect(mockRetweetPost).toHaveBeenCalledTimes(1);
   });
 
-  test('formats timestamp correctly', () => {
-    // Create a post with a timestamp we can control
-    const recentPost = {
-      ...mockPost,
-      timestamp: new Date(Date.now() - 60 * 60 * 1000) // 1 hour ago
-    };
+  describe('formatTime function', () => {
+    test('formats timestamp as "now" for very recent posts', () => {
+      const nowPost = {
+        ...mockPost,
+        timestamp: new Date(Date.now() - 30 * 1000) // 30 seconds ago
+      };
 
-    render(<Post post={recentPost} />);
-    
-    // Should show "1h" for a post from 1 hour ago
-    const timeElements = screen.getAllByText(/\d+h/); // Match any text with digits followed by 'h'
-    expect(timeElements.length).toBeGreaterThan(0);
-    
-    // Alternative approach: check that the timestamp element exists
-    const timestampElement = screen.getByText((content, element) => {
-      return element.tagName.toLowerCase() === 'span' && 
-             element.classList.contains('text-gray-500') && 
-             element.classList.contains('text-sm');
+      render(<Post post={nowPost} />);
+      
+      expect(screen.getByText('now')).toBeInTheDocument();
+      expect(consoleSpy).toHaveBeenCalled();
     });
-    expect(timestampElement).toBeInTheDocument();
+
+    test('formats timestamp in minutes for posts less than 1 hour old', () => {
+      const minutesPost = {
+        ...mockPost,
+        timestamp: new Date(Date.now() - 30 * 60 * 1000) // 30 minutes ago
+      };
+
+      render(<Post post={minutesPost} />);
+      
+      expect(screen.getByText('30m')).toBeInTheDocument();
+      expect(consoleSpy).toHaveBeenCalled();
+    });
+
+    test('formats timestamp in hours for posts less than 24 hours old', () => {
+      const hoursPost = {
+        ...mockPost,
+        timestamp: new Date(Date.now() - 5 * 60 * 60 * 1000) // 5 hours ago
+      };
+
+      render(<Post post={hoursPost} />);
+      
+      expect(screen.getByText('5h')).toBeInTheDocument();
+      expect(consoleSpy).toHaveBeenCalled();
+    });
+
+    test('formats timestamp in days for posts older than 24 hours', () => {
+      const daysPost = {
+        ...mockPost,
+        timestamp: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000) // 3 days ago
+      };
+
+      render(<Post post={daysPost} />);
+      
+      expect(screen.getByText('3d')).toBeInTheDocument();
+      expect(consoleSpy).toHaveBeenCalled();
+    });
+
+    test('handles boundary conditions correctly', () => {
+      const oneMinutePost = {
+        ...mockPost,
+        timestamp: new Date(Date.now() - 60 * 1000) // exactly 1 minute ago
+      };
+
+      render(<Post post={oneMinutePost} />);
+      expect(screen.getByText('1m')).toBeInTheDocument();
+    });
+
+    test('handles exactly 1 hour boundary', () => {
+      const oneHourPost = {
+        ...mockPost,
+        timestamp: new Date(Date.now() - 60 * 60 * 1000) // exactly 1 hour ago
+      };
+
+      render(<Post post={oneHourPost} />);
+      expect(screen.getByText('1h')).toBeInTheDocument();
+    });
+
+    test('handles exactly 24 hours boundary', () => {
+      const oneDayPost = {
+        ...mockPost,
+        timestamp: new Date(Date.now() - 24 * 60 * 60 * 1000) // exactly 24 hours ago
+      };
+
+      render(<Post post={oneDayPost} />);
+      expect(screen.getByText('1d')).toBeInTheDocument();
+    });
+
+    test('logs to console when formatTime is called', () => {
+      render(<Post post={mockPost} />);
+      expect(consoleSpy).toHaveBeenCalledWith('hello!');
+    });
+  });
+
+  describe('error handling and edge cases', () => {
+    test('handles missing author name gracefully', () => {
+      const postWithoutAuthorName = {
+        ...mockPost,
+        author: {
+          ...mockPost.author,
+          name: ''
+        }
+      };
+
+      render(<Post post={postWithoutAuthorName} />);
+      expect(screen.getByTestId('avatar-mock')).toBeInTheDocument();
+    });
+
+    test('handles missing author username gracefully', () => {
+      const postWithoutUsername = {
+        ...mockPost,
+        author: {
+          ...mockPost.author,
+          username: ''
+        }
+      };
+
+      render(<Post post={postWithoutUsername} />);
+      expect(screen.getByText('@')).toBeInTheDocument();
+    });
+
+    test('handles empty post content', () => {
+      const emptyPost = {
+        ...mockPost,
+        content: ''
+      };
+
+      render(<Post post={emptyPost} />);
+      expect(screen.getByText((content, element) => {
+        return content === 'Test User' && element.tagName.toLowerCase() === 'h3';
+      })).toBeInTheDocument();
+    });
+
+    test('handles zero interaction counts', () => {
+      const zeroInteractionPost = {
+        ...mockPost,
+        likes: 0,
+        retweets: 0,
+        replies: 0
+      };
+
+      render(<Post post={zeroInteractionPost} />);
+      const zeroElements = screen.getAllByText('0');
+      expect(zeroElements).toHaveLength(3); // replies, retweets, likes
+    });
+
+    test('handles very large interaction counts', () => {
+      const highInteractionPost = {
+        ...mockPost,
+        likes: 999999,
+        retweets: 888888,
+        replies: 777777
+      };
+
+      render(<Post post={highInteractionPost} />);
+      expect(screen.getByText('999999')).toBeInTheDocument();
+      expect(screen.getByText('888888')).toBeInTheDocument();
+      expect(screen.getByText('777777')).toBeInTheDocument();
+    });
+  });
+
+  describe('accessibility and interactions', () => {
+    test('like button has proper accessibility attributes', () => {
+      render(<Post post={mockPost} />);
+      
+      const likeButton = screen.getByText('42').closest('button');
+      expect(likeButton).toBeInTheDocument();
+      expect(likeButton).toHaveClass('hover:text-red-500');
+    });
+
+    test('retweet button has proper accessibility attributes', () => {
+      render(<Post post={mockPost} />);
+      
+      const retweetButton = screen.getByText('12').closest('button');
+      expect(retweetButton).toBeInTheDocument();
+      expect(retweetButton).toHaveClass('hover:text-green-500');
+    });
+
+    test('reply button is present but non-functional', () => {
+      render(<Post post={mockPost} />);
+      
+      const replyButton = screen.getByText('5').closest('button');
+      expect(replyButton).toBeInTheDocument();
+      expect(replyButton).toHaveClass('hover:text-blue-500');
+    });
+
+    test('share button is present but non-functional', () => {
+      render(<Post post={mockPost} />);
+      
+      const shareButtons = screen.getAllByRole('button');
+      const shareButton = shareButtons.find(button => 
+        button.querySelector('svg path[d*="M8.684"]')
+      );
+      expect(shareButton).toBeInTheDocument();
+    });
+
+    test('multiple clicks on like button call likePost multiple times', () => {
+      render(<Post post={mockPost} />);
+      
+      const likeButton = screen.getByText('42').closest('button');
+      fireEvent.click(likeButton);
+      fireEvent.click(likeButton);
+      
+      expect(mockLikePost).toHaveBeenCalledTimes(2);
+      expect(mockLikePost).toHaveBeenCalledWith(mockPost.id);
+    });
+
+    test('multiple clicks on retweet button call retweetPost multiple times', () => {
+      render(<Post post={mockPost} />);
+      
+      const retweetButton = screen.getByText('12').closest('button');
+      fireEvent.click(retweetButton);
+      fireEvent.click(retweetButton);
+      
+      expect(mockRetweetPost).toHaveBeenCalledTimes(2);
+      expect(mockRetweetPost).toHaveBeenCalledWith(mockPost.id);
+    });
   });
 });
