@@ -106,4 +106,128 @@ describe('Post Component', () => {
     });
     expect(timestampElement).toBeInTheDocument();
   });
+
+  describe('formatTime function', () => {
+    test('returns "now" for timestamps less than 1 minute ago', () => {
+      const recentPost = {
+        ...mockPost,
+        timestamp: new Date(Date.now() - 30 * 1000) // 30 seconds ago
+      };
+      render(<Post post={recentPost} />);
+      expect(screen.getByText('now')).toBeInTheDocument();
+    });
+
+    test('returns minutes for timestamps between 1-59 minutes ago', () => {
+      const minutesAgoPost = {
+        ...mockPost,
+        timestamp: new Date(Date.now() - 30 * 60 * 1000) // 30 minutes ago
+      };
+      render(<Post post={minutesAgoPost} />);
+      expect(screen.getByText('30m')).toBeInTheDocument();
+    });
+
+    test('returns hours for timestamps between 1-23 hours ago', () => {
+      const hoursAgoPost = {
+        ...mockPost,
+        timestamp: new Date(Date.now() - 5 * 60 * 60 * 1000) // 5 hours ago
+      };
+      render(<Post post={hoursAgoPost} />);
+      expect(screen.getByText('5h')).toBeInTheDocument();
+    });
+
+    test('returns days for timestamps 24+ hours ago', () => {
+      const daysAgoPost = {
+        ...mockPost,
+        timestamp: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000) // 3 days ago
+      };
+      render(<Post post={daysAgoPost} />);
+      expect(screen.getByText('3d')).toBeInTheDocument();
+    });
+
+    test('handles boundary case - exactly 1 minute', () => {
+      const oneMinutePost = {
+        ...mockPost,
+        timestamp: new Date(Date.now() - 60 * 1000)
+      };
+      render(<Post post={oneMinutePost} />);
+      expect(screen.getByText('1m')).toBeInTheDocument();
+    });
+
+    test('handles boundary case - exactly 1 hour', () => {
+      const oneHourPost = {
+        ...mockPost,
+        timestamp: new Date(Date.now() - 60 * 60 * 1000)
+      };
+      render(<Post post={oneHourPost} />);
+      expect(screen.getByText('1h')).toBeInTheDocument();
+    });
+
+    test('handles boundary case - exactly 24 hours', () => {
+      const oneDayPost = {
+        ...mockPost,
+        timestamp: new Date(Date.now() - 24 * 60 * 60 * 1000)
+      };
+      render(<Post post={oneDayPost} />);
+      expect(screen.getByText('1d')).toBeInTheDocument();
+    });
+  });
+
+  describe('formatTime error handling', () => {
+    test('handles invalid date objects gracefully', () => {
+      const invalidDatePost = {
+        ...mockPost,
+        timestamp: new Date('invalid-date')
+      };
+      render(<Post post={invalidDatePost} />);
+      // Should not crash and should render the post
+      expect(screen.getByText('This is a test post content')).toBeInTheDocument();
+    });
+
+    test('handles very old timestamps', () => {
+      const veryOldPost = {
+        ...mockPost,
+        timestamp: new Date('2020-01-01')
+      };
+      render(<Post post={veryOldPost} />);
+      // Should show days format for very old posts
+      const timeElement = screen.getByText(/\d+d/);
+      expect(timeElement).toBeInTheDocument();
+    });
+  });
+
+  describe('interaction handlers', () => {
+    test('handleLike calls likePost with correct parameters multiple times', () => {
+      render(<Post post={mockPost} />);
+      const likeButton = screen.getByText('42').closest('button');
+      
+      fireEvent.click(likeButton);
+      fireEvent.click(likeButton);
+      
+      expect(mockLikePost).toHaveBeenCalledTimes(2);
+      expect(mockLikePost).toHaveBeenCalledWith(mockPost.id);
+    });
+
+    test('handleRetweet calls retweetPost with correct parameters multiple times', () => {
+      render(<Post post={mockPost} />);
+      const retweetButton = screen.getByText('12').closest('button');
+      
+      fireEvent.click(retweetButton);
+      fireEvent.click(retweetButton);
+      
+      expect(mockRetweetPost).toHaveBeenCalledTimes(2);
+      expect(mockRetweetPost).toHaveBeenCalledWith(mockPost.id);
+    });
+
+    test('interaction buttons have correct accessibility attributes', () => {
+      render(<Post post={mockPost} />);
+      
+      const likeButton = screen.getByText('42').closest('button');
+      const retweetButton = screen.getByText('12').closest('button');
+      
+      expect(likeButton).toBeInTheDocument();
+      expect(retweetButton).toBeInTheDocument();
+      expect(likeButton.tagName).toBe('BUTTON');
+      expect(retweetButton.tagName).toBe('BUTTON');
+    });
+  });
 });
