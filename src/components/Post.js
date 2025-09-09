@@ -11,6 +11,14 @@ import { Avatar } from './Avatar';
 export const Post = ({ post }) => {
   const { likePost, retweetPost } = usePosts();
 
+  if (!post) {
+    return null;
+  }
+
+  const author = post.author || {};
+  const authorName = author.name || 'Unknown User';
+  const authorUsername = author.username || 'unknown';
+
   /**
    * Format timestamp to a readable format
    * @param {Date} timestamp - The timestamp to format
@@ -22,8 +30,6 @@ export const Post = ({ post }) => {
     const minutes = Math.floor(diff / 60000);
     const hours = Math.floor(diff / 3600000);
     const days = Math.floor(diff / 86400000);
-
-    console.log('hello!');
 
     if (minutes < 1) return 'now';
     if (minutes < 60) return `${minutes}m`;
@@ -50,7 +56,7 @@ export const Post = ({ post }) => {
       <div className="flex space-x-3">
         {/* Avatar */}
         <Avatar 
-          name={post.author.name}
+          name={authorName}
           size="md"
         />
         
@@ -59,18 +65,18 @@ export const Post = ({ post }) => {
           {/* Author info */}
           <div className="flex items-center space-x-2">
             <h3 className="font-display font-bold text-gray-900 hover:underline cursor-pointer">
-              {post.author.name}
+              {authorName}
             </h3>
-            <span className="text-gray-500 font-mono">@{post.author.username}</span>
+            <span className="text-gray-500 font-mono">@{authorUsername}</span>
             <span className="text-gray-500">·</span>
             <span className="text-gray-500 text-sm">
-              {formatTime(post.timestamp)}
+              {post.timestamp ? formatTime(post.timestamp) : 'unknown'}
             </span>
           </div>
           
           {/* Post text */}
           <p className="mt-1 text-gray-900 text-base leading-relaxed text-body">
-            {post.content}
+            {post.content || ''}
           </p>
           
           {/* Action buttons */}
@@ -82,7 +88,7 @@ export const Post = ({ post }) => {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
                 </svg>
               </div>
-              <span className="text-sm text-accent">{post.replies}</span>
+              <span className="text-sm text-accent">{post.replies || 0}</span>
             </button>
             
             {/* Retweet */}
@@ -95,7 +101,7 @@ export const Post = ({ post }) => {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4" />
                 </svg>
               </div>
-              <span className="text-sm text-accent">{post.retweets}</span>
+              <span className="text-sm text-accent">{post.retweets || 0}</span>
             </button>
             
             {/* Like */}
@@ -108,7 +114,7 @@ export const Post = ({ post }) => {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
                 </svg>
               </div>
-              <span className="text-sm text-accent">{post.likes}</span>
+              <span className="text-sm text-accent">{post.likes || 0}</span>
             </button>
             
             {/* Share */}
