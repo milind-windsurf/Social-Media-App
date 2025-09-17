@@ -85,25 +85,73 @@ describe('Post Component', () => {
     expect(mockRetweetPost).toHaveBeenCalledTimes(1);
   });
 
-  test('formats timestamp correctly', () => {
-    // Create a post with a timestamp we can control
-    const recentPost = {
+  test('formats timestamp correctly for "now" case', () => {
+    const now = new Date();
+    const nowPost = {
       ...mockPost,
-      timestamp: new Date(Date.now() - 60 * 60 * 1000) // 1 hour ago
+      timestamp: new Date(now.getTime() - 30000)
     };
+    render(<Post post={nowPost} />);
+    expect(screen.getByText('now')).toBeInTheDocument();
+  });
 
-    render(<Post post={recentPost} />);
-    
-    // Should show "1h" for a post from 1 hour ago
-    const timeElements = screen.getAllByText(/\d+h/); // Match any text with digits followed by 'h'
-    expect(timeElements.length).toBeGreaterThan(0);
-    
-    // Alternative approach: check that the timestamp element exists
-    const timestampElement = screen.getByText((content, element) => {
-      return element.tagName.toLowerCase() === 'span' && 
-             element.classList.contains('text-gray-500') && 
-             element.classList.contains('text-sm');
-    });
-    expect(timestampElement).toBeInTheDocument();
+  test('formats timestamp correctly for minutes case', () => {
+    const now = new Date();
+    const minutesPost = {
+      ...mockPost,
+      timestamp: new Date(now.getTime() - 5 * 60 * 1000)
+    };
+    render(<Post post={minutesPost} />);
+    expect(screen.getByText('5m')).toBeInTheDocument();
+  });
+
+  test('formats timestamp correctly for hours case', () => {
+    const now = new Date();
+    const hoursPost = {
+      ...mockPost,
+      timestamp: new Date(now.getTime() - 3 * 60 * 60 * 1000)
+    };
+    render(<Post post={hoursPost} />);
+    expect(screen.getByText('3h')).toBeInTheDocument();
+  });
+
+  test('formats timestamp correctly for days case', () => {
+    const now = new Date();
+    const daysPost = {
+      ...mockPost,
+      timestamp: new Date(now.getTime() - 2 * 24 * 60 * 60 * 1000)
+    };
+    render(<Post post={daysPost} />);
+    expect(screen.getByText('2d')).toBeInTheDocument();
+  });
+
+  test('handles edge case for exactly 1 minute', () => {
+    const now = new Date();
+    const oneMinutePost = {
+      ...mockPost,
+      timestamp: new Date(now.getTime() - 60 * 1000)
+    };
+    render(<Post post={oneMinutePost} />);
+    expect(screen.getByText('1m')).toBeInTheDocument();
+  });
+
+  test('handles edge case for exactly 1 hour', () => {
+    const now = new Date();
+    const oneHourPost = {
+      ...mockPost,
+      timestamp: new Date(now.getTime() - 60 * 60 * 1000)
+    };
+    render(<Post post={oneHourPost} />);
+    expect(screen.getByText('1h')).toBeInTheDocument();
+  });
+
+  test('handles edge case for exactly 24 hours', () => {
+    const now = new Date();
+    const oneDayPost = {
+      ...mockPost,
+      timestamp: new Date(now.getTime() - 24 * 60 * 60 * 1000)
+    };
+    render(<Post post={oneDayPost} />);
+    expect(screen.getByText('1d')).toBeInTheDocument();
   });
 });
