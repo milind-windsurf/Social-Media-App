@@ -106,4 +106,149 @@ describe('Post Component', () => {
     });
     expect(timestampElement).toBeInTheDocument();
   });
+
+  describe('formatTime function', () => {
+    test('returns "now" for timestamps less than 1 minute ago', () => {
+      const recentPost = {
+        ...mockPost,
+        timestamp: new Date(Date.now() - 30 * 1000) // 30 seconds ago
+      };
+      render(<Post post={recentPost} />);
+      expect(screen.getByText('now')).toBeInTheDocument();
+    });
+
+    test('returns minutes format for timestamps less than 1 hour ago', () => {
+      const minutesAgoPost = {
+        ...mockPost,
+        timestamp: new Date(Date.now() - 45 * 60 * 1000) // 45 minutes ago
+      };
+      render(<Post post={minutesAgoPost} />);
+      expect(screen.getByText('45m')).toBeInTheDocument();
+    });
+
+    test('returns hours format for timestamps less than 24 hours ago', () => {
+      const hoursAgoPost = {
+        ...mockPost,
+        timestamp: new Date(Date.now() - 5 * 60 * 60 * 1000) // 5 hours ago
+      };
+      render(<Post post={hoursAgoPost} />);
+      expect(screen.getByText('5h')).toBeInTheDocument();
+    });
+
+    test('returns days format for timestamps 24+ hours ago', () => {
+      const daysAgoPost = {
+        ...mockPost,
+        timestamp: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000) // 3 days ago
+      };
+      render(<Post post={daysAgoPost} />);
+      expect(screen.getByText('3d')).toBeInTheDocument();
+    });
+  });
+
+  describe('formatTime boundary conditions', () => {
+    test('handles exactly 1 minute boundary', () => {
+      const exactMinutePost = {
+        ...mockPost,
+        timestamp: new Date(Date.now() - 60 * 1000) // exactly 1 minute ago
+      };
+      render(<Post post={exactMinutePost} />);
+      expect(screen.getByText('1m')).toBeInTheDocument();
+    });
+
+    test('handles exactly 1 hour boundary', () => {
+      const exactHourPost = {
+        ...mockPost,
+        timestamp: new Date(Date.now() - 60 * 60 * 1000) // exactly 1 hour ago
+      };
+      render(<Post post={exactHourPost} />);
+      expect(screen.getByText('1h')).toBeInTheDocument();
+    });
+
+    test('handles exactly 24 hours boundary', () => {
+      const exactDayPost = {
+        ...mockPost,
+        timestamp: new Date(Date.now() - 24 * 60 * 60 * 1000) // exactly 24 hours ago
+      };
+      render(<Post post={exactDayPost} />);
+      expect(screen.getByText('1d')).toBeInTheDocument();
+    });
+  });
+
+  describe('formatTime edge cases', () => {
+    test('handles future timestamps gracefully', () => {
+      const futurePost = {
+        ...mockPost,
+        timestamp: new Date(Date.now() + 60 * 60 * 1000) // 1 hour in future
+      };
+      render(<Post post={futurePost} />);
+      // Should show "now" for negative differences
+      expect(screen.getByText('now')).toBeInTheDocument();
+    });
+
+    test('handles very old timestamps', () => {
+      const veryOldPost = {
+        ...mockPost,
+        timestamp: new Date(Date.now() - 365 * 24 * 60 * 60 * 1000) // 1 year ago
+      };
+      render(<Post post={veryOldPost} />);
+      expect(screen.getByText('365d')).toBeInTheDocument();
+    });
+  });
+
+  describe('Post component error handling', () => {
+    test('handles missing author name gracefully', () => {
+      const postWithoutName = {
+        ...mockPost,
+        author: { ...mockPost.author, name: '' }
+      };
+      render(<Post post={postWithoutName} />);
+      expect(screen.getByText('@testuser')).toBeInTheDocument();
+    });
+
+    test('handles zero interaction counts', () => {
+      const postWithZeros = {
+        ...mockPost,
+        likes: 0,
+        retweets: 0,
+        replies: 0
+      };
+      render(<Post post={postWithZeros} />);
+      expect(screen.getAllByText('0')).toHaveLength(3);
+    });
+
+    test('handles empty content', () => {
+      const emptyContentPost = {
+        ...mockPost,
+        content: ''
+      };
+      render(<Post post={emptyContentPost} />);
+      // Should still render the post structure - use more specific selector
+      expect(screen.getByText((content, element) => {
+        return content === 'Test User' && element.tagName.toLowerCase() === 'h3';
+      })).toBeInTheDocument();
+    });
+  });
+
+  describe('Post component context error handling', () => {
+    test('handles missing context functions gracefully', () => {
+      usePosts.mockReturnValue({
+        likePost: undefined,
+        retweetPost: undefined
+      });
+      
+      render(<Post post={mockPost} />);
+      
+      // Should render without crashing - use more specific selector
+      expect(screen.getByText((content, element) => {
+        return content === 'Test User' && element.tagName.toLowerCase() === 'h3';
+      })).toBeInTheDocument();
+    });
+  });
+
+  test('logs to console when formatting time', () => {
+    const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
+    render(<Post post={mockPost} />);
+    expect(consoleSpy).toHaveBeenCalledWith('hello!');
+    consoleSpy.mockRestore();
+  });
 });
