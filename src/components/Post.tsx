@@ -2,13 +2,20 @@
 
 import { usePosts } from '@/context/PostsContext';
 import { Avatar } from './Avatar';
+import { Post as PostType } from '@/types';
+
+/**
+ * Props for Post component
+ */
+interface PostProps {
+  post: PostType;
+}
 
 /**
  * Individual post component for displaying a single post in the timeline
- * @param {Object} props - Component props
- * @param {Object} props.post - The post object containing all post data
+ * @param {PostProps} props - Component props
  */
-export const Post = ({ post }) => {
+export const Post = ({ post }: PostProps): JSX.Element => {
   const { likePost, retweetPost } = usePosts();
 
   /**
@@ -16,9 +23,9 @@ export const Post = ({ post }) => {
    * @param {Date} timestamp - The timestamp to format
    * @returns {string} Formatted time string
    */
-  const formatTime = (timestamp) => {
+  const formatTime = (timestamp: Date): string => {
     const now = new Date();
-    const diff = now - timestamp;
+    const diff = now.getTime() - timestamp.getTime();
     const minutes = Math.floor(diff / 60000);
     const hours = Math.floor(diff / 3600000);
     const days = Math.floor(diff / 86400000);
@@ -34,29 +41,26 @@ export const Post = ({ post }) => {
   /**
    * Handle like button click
    */
-  const handleLike = () => {
+  const handleLike = (): void => {
     likePost(post.id);
   };
 
   /**
    * Handle retweet button click
    */
-  const handleRetweet = () => {
+  const handleRetweet = (): void => {
     retweetPost(post.id);
   };
 
   return (
     <div className="border-b border-gray-200 px-6 py-4 hover:bg-gray-50 transition-colors w-full">
       <div className="flex space-x-3">
-        {/* Avatar */}
         <Avatar 
           name={post.author.name}
           size="md"
         />
         
-        {/* Post content */}
         <div className="flex-1 min-w-0">
-          {/* Author info */}
           <div className="flex items-center space-x-2">
             <h3 className="font-display font-bold text-gray-900 hover:underline cursor-pointer">
               {post.author.name}
@@ -68,14 +72,11 @@ export const Post = ({ post }) => {
             </span>
           </div>
           
-          {/* Post text */}
           <p className="mt-1 text-gray-900 text-base leading-relaxed text-body">
             {post.content}
           </p>
           
-          {/* Action buttons */}
           <div className="flex items-center justify-between mt-3 max-w-md">
-            {/* Reply */}
             <button className="flex items-center space-x-2 text-gray-500 hover:text-blue-500 transition-colors group">
               <div className="p-2 rounded-full group-hover:bg-blue-50">
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -85,7 +86,6 @@ export const Post = ({ post }) => {
               <span className="text-sm text-accent">{post.replies}</span>
             </button>
             
-            {/* Retweet */}
             <button 
               onClick={handleRetweet}
               className="flex items-center space-x-2 text-gray-500 hover:text-green-500 transition-colors group"
@@ -98,7 +98,6 @@ export const Post = ({ post }) => {
               <span className="text-sm text-accent">{post.retweets}</span>
             </button>
             
-            {/* Like */}
             <button 
               onClick={handleLike}
               className="flex items-center space-x-2 text-gray-500 hover:text-red-500 transition-colors group"
@@ -111,7 +110,6 @@ export const Post = ({ post }) => {
               <span className="text-sm text-accent">{post.likes}</span>
             </button>
             
-            {/* Share */}
             <button className="flex items-center space-x-2 text-gray-500 hover:text-blue-500 transition-colors group">
               <div className="p-2 rounded-full group-hover:bg-blue-50">
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
