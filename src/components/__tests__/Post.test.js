@@ -106,4 +106,105 @@ describe('Post Component', () => {
     });
     expect(timestampElement).toBeInTheDocument();
   });
+
+  describe('formatTime edge cases', () => {
+    test('shows "now" for posts less than 1 minute old', () => {
+      const nowPost = {
+        ...mockPost,
+        timestamp: new Date(Date.now() - 30000) // 30 seconds ago
+      };
+      render(<Post post={nowPost} />);
+      expect(screen.getByText('now')).toBeInTheDocument();
+    });
+
+    test('shows minutes for posts 1-59 minutes old', () => {
+      const minutePost = {
+        ...mockPost,
+        timestamp: new Date(Date.now() - 30 * 60 * 1000) // 30 minutes ago
+      };
+      render(<Post post={minutePost} />);
+      expect(screen.getByText('30m')).toBeInTheDocument();
+    });
+
+    test('shows hours for posts 1-23 hours old', () => {
+      const hourPost = {
+        ...mockPost,
+        timestamp: new Date(Date.now() - 12 * 60 * 60 * 1000) // 12 hours ago
+      };
+      render(<Post post={hourPost} />);
+      expect(screen.getByText('12h')).toBeInTheDocument();
+    });
+
+    test('shows days for posts 24+ hours old', () => {
+      const dayPost = {
+        ...mockPost,
+        timestamp: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000) // 3 days ago
+      };
+      render(<Post post={dayPost} />);
+      expect(screen.getByText('3d')).toBeInTheDocument();
+    });
+
+    test('handles exact 1 minute boundary', () => {
+      const exactMinutePost = {
+        ...mockPost,
+        timestamp: new Date(Date.now() - 60 * 1000) // exactly 60 seconds
+      };
+      render(<Post post={exactMinutePost} />);
+      expect(screen.getByText('1m')).toBeInTheDocument();
+    });
+
+    test('handles exact 1 hour boundary', () => {
+      const exactHourPost = {
+        ...mockPost,
+        timestamp: new Date(Date.now() - 60 * 60 * 1000) // exactly 60 minutes
+      };
+      render(<Post post={exactHourPost} />);
+      expect(screen.getByText('1h')).toBeInTheDocument();
+    });
+
+    test('handles exact 1 day boundary', () => {
+      const exactDayPost = {
+        ...mockPost,
+        timestamp: new Date(Date.now() - 24 * 60 * 60 * 1000) // exactly 24 hours
+      };
+      render(<Post post={exactDayPost} />);
+      expect(screen.getByText('1d')).toBeInTheDocument();
+    });
+  });
+
+  describe('Post component edge cases', () => {
+    test('renders with zero interaction counts', () => {
+      const zeroPost = {
+        ...mockPost,
+        likes: 0,
+        retweets: 0,
+        replies: 0
+      };
+      render(<Post post={zeroPost} />);
+      const zeros = screen.getAllByText('0');
+      expect(zeros.length).toBeGreaterThanOrEqual(3);
+    });
+
+    test('renders with large interaction counts', () => {
+      const popularPost = {
+        ...mockPost,
+        likes: 1000000,
+        retweets: 500000,
+        replies: 250000
+      };
+      render(<Post post={popularPost} />);
+      expect(screen.getByText('1000000')).toBeInTheDocument();
+      expect(screen.getByText('500000')).toBeInTheDocument();
+      expect(screen.getByText('250000')).toBeInTheDocument();
+    });
+
+    test('renders correctly with very recent timestamp', () => {
+      const veryRecentPost = {
+        ...mockPost,
+        timestamp: new Date(Date.now() - 5000) // 5 seconds ago
+      };
+      render(<Post post={veryRecentPost} />);
+      expect(screen.getByText('now')).toBeInTheDocument();
+    });
+  });
 });
