@@ -106,4 +106,61 @@ describe('Post Component', () => {
     });
     expect(timestampElement).toBeInTheDocument();
   });
+
+  test('formatTime returns "now" for timestamps less than 1 minute ago', () => {
+    const recentPost = {
+      ...mockPost,
+      timestamp: new Date(Date.now() - 30 * 1000)
+    };
+    
+    render(<Post post={recentPost} />);
+    expect(screen.getByText('now')).toBeInTheDocument();
+  });
+
+  test('formatTime returns minutes for timestamps less than 1 hour ago', () => {
+    const recentPost = {
+      ...mockPost,
+      timestamp: new Date(Date.now() - 45 * 60 * 1000)
+    };
+    
+    render(<Post post={recentPost} />);
+    expect(screen.getByText('45m')).toBeInTheDocument();
+  });
+
+  test('formatTime returns hours for timestamps less than 24 hours ago', () => {
+    const recentPost = {
+      ...mockPost,
+      timestamp: new Date(Date.now() - 5 * 60 * 60 * 1000)
+    };
+    
+    render(<Post post={recentPost} />);
+    expect(screen.getByText('5h')).toBeInTheDocument();
+  });
+
+  test('formatTime returns days for timestamps 24 hours or more ago', () => {
+    const oldPost = {
+      ...mockPost,
+      timestamp: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000)
+    };
+    
+    render(<Post post={oldPost} />);
+    expect(screen.getByText('3d')).toBeInTheDocument();
+  });
+
+  test('renders reply button with correct count', () => {
+    render(<Post post={mockPost} />);
+    
+    const replyButton = screen.getByText('5').closest('button');
+    expect(replyButton).toBeInTheDocument();
+    expect(replyButton).toHaveClass('text-gray-500', 'hover:text-blue-500');
+  });
+
+  test('renders share button', () => {
+    render(<Post post={mockPost} />);
+    
+    const buttons = screen.getAllByRole('button');
+    const shareButton = buttons[3];
+    expect(shareButton).toBeInTheDocument();
+    expect(shareButton).toHaveClass('text-gray-500', 'hover:text-blue-500');
+  });
 });
