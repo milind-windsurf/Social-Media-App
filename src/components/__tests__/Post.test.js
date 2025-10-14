@@ -106,4 +106,157 @@ describe('Post Component', () => {
     });
     expect(timestampElement).toBeInTheDocument();
   });
+
+  describe('formatTime function', () => {
+    test('returns "now" for timestamps less than 1 minute ago', () => {
+      const recentPost = {
+        ...mockPost,
+        timestamp: new Date(Date.now() - 30000) // 30 seconds ago
+      };
+      
+      render(<Post post={recentPost} />);
+      expect(screen.getByText('now')).toBeInTheDocument();
+    });
+
+    test('returns minutes for timestamps less than 60 minutes ago', () => {
+      const post1m = {
+        ...mockPost,
+        timestamp: new Date(Date.now() - 1 * 60 * 1000) // 1 minute ago
+      };
+      
+      render(<Post post={post1m} />);
+      expect(screen.getByText('1m')).toBeInTheDocument();
+    });
+
+    test('returns correct minutes for 30 minutes ago', () => {
+      const post30m = {
+        ...mockPost,
+        timestamp: new Date(Date.now() - 30 * 60 * 1000) // 30 minutes ago
+      };
+      
+      render(<Post post={post30m} />);
+      expect(screen.getByText('30m')).toBeInTheDocument();
+    });
+
+    test('returns correct minutes for 59 minutes ago', () => {
+      const post59m = {
+        ...mockPost,
+        timestamp: new Date(Date.now() - 59 * 60 * 1000) // 59 minutes ago
+      };
+      
+      render(<Post post={post59m} />);
+      expect(screen.getByText('59m')).toBeInTheDocument();
+    });
+
+    test('returns hours for timestamps less than 24 hours ago', () => {
+      const post1h = {
+        ...mockPost,
+        timestamp: new Date(Date.now() - 1 * 60 * 60 * 1000) // 1 hour ago
+      };
+      
+      render(<Post post={post1h} />);
+      expect(screen.getByText('1h')).toBeInTheDocument();
+    });
+
+    test('returns correct hours for 12 hours ago', () => {
+      const post12h = {
+        ...mockPost,
+        timestamp: new Date(Date.now() - 12 * 60 * 60 * 1000) // 12 hours ago
+      };
+      
+      render(<Post post={post12h} />);
+      expect(screen.getByText('12h')).toBeInTheDocument();
+    });
+
+    test('returns correct hours for 23 hours ago', () => {
+      const post23h = {
+        ...mockPost,
+        timestamp: new Date(Date.now() - 23 * 60 * 60 * 1000) // 23 hours ago
+      };
+      
+      render(<Post post={post23h} />);
+      expect(screen.getByText('23h')).toBeInTheDocument();
+    });
+
+    test('returns days for timestamps 24 hours or more ago', () => {
+      const post1d = {
+        ...mockPost,
+        timestamp: new Date(Date.now() - 24 * 60 * 60 * 1000) // 1 day ago
+      };
+      
+      render(<Post post={post1d} />);
+      expect(screen.getByText('1d')).toBeInTheDocument();
+    });
+
+    test('returns correct days for 7 days ago', () => {
+      const post7d = {
+        ...mockPost,
+        timestamp: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) // 7 days ago
+      };
+      
+      render(<Post post={post7d} />);
+      expect(screen.getByText('7d')).toBeInTheDocument();
+    });
+
+    test('returns correct days for 30 days ago', () => {
+      const post30d = {
+        ...mockPost,
+        timestamp: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) // 30 days ago
+      };
+      
+      render(<Post post={post30d} />);
+      expect(screen.getByText('30d')).toBeInTheDocument();
+    });
+  });
+
+  describe('Button interactions', () => {
+    test('renders reply button with correct count', () => {
+      render(<Post post={mockPost} />);
+      
+      const replyButton = screen.getByText('5').closest('button');
+      expect(replyButton).toBeInTheDocument();
+      expect(replyButton).toHaveClass('text-gray-500', 'hover:text-blue-500');
+    });
+
+    test('renders share button', () => {
+      render(<Post post={mockPost} />);
+      
+      const buttons = screen.getAllByRole('button');
+      const shareButton = buttons[3];
+      expect(shareButton).toBeInTheDocument();
+      expect(shareButton).toHaveClass('text-gray-500', 'hover:text-blue-500');
+    });
+  });
+
+  describe('CSS classes and structure', () => {
+    test('applies correct CSS classes to post container', () => {
+      const { container } = render(<Post post={mockPost} />);
+      
+      const postContainer = container.firstChild;
+      expect(postContainer).toHaveClass('border-b', 'border-gray-200', 'hover:bg-gray-50', 'transition-colors');
+    });
+
+    test('applies correct CSS classes to author name', () => {
+      render(<Post post={mockPost} />);
+      
+      const authorName = screen.getByText((content, element) => {
+        return content === 'Test User' && element.tagName.toLowerCase() === 'h3';
+      });
+      expect(authorName).toHaveClass('font-display', 'font-bold', 'text-gray-900', 'hover:underline', 'cursor-pointer');
+    });
+
+    test('applies correct CSS classes to username', () => {
+      render(<Post post={mockPost} />);
+      
+      const username = screen.getByText('@testuser');
+      expect(username).toHaveClass('text-gray-500', 'font-mono');
+    });
+
+    test('applies correct CSS classes to post content', () => {
+      render(<Post post={mockPost} />);
+      
+      const content = screen.getByText('This is a test post content');
+      expect(content).toHaveClass('text-gray-900', 'text-base', 'leading-relaxed', 'text-body');
+    });
+  });
 });
