@@ -106,4 +106,117 @@ describe('Post Component', () => {
     });
     expect(timestampElement).toBeInTheDocument();
   });
+
+  describe('formatTime edge cases', () => {
+    test('displays "now" for posts less than 1 minute old', () => {
+      const veryRecentPost = {
+        ...mockPost,
+        timestamp: new Date(Date.now() - 30 * 1000)
+      };
+
+      render(<Post post={veryRecentPost} />);
+      expect(screen.getByText('now')).toBeInTheDocument();
+    });
+
+    test('displays minutes for posts 1-59 minutes old', () => {
+      const post30MinutesAgo = {
+        ...mockPost,
+        timestamp: new Date(Date.now() - 30 * 60 * 1000)
+      };
+
+      render(<Post post={post30MinutesAgo} />);
+      expect(screen.getByText('30m')).toBeInTheDocument();
+    });
+
+    test('displays "1m" for posts exactly 1 minute old', () => {
+      const post1MinuteAgo = {
+        ...mockPost,
+        timestamp: new Date(Date.now() - 60 * 1000)
+      };
+
+      render(<Post post={post1MinuteAgo} />);
+      expect(screen.getByText('1m')).toBeInTheDocument();
+    });
+
+    test('displays hours for posts 1-23 hours old', () => {
+      const post5HoursAgo = {
+        ...mockPost,
+        timestamp: new Date(Date.now() - 5 * 60 * 60 * 1000)
+      };
+
+      render(<Post post={post5HoursAgo} />);
+      expect(screen.getByText('5h')).toBeInTheDocument();
+    });
+
+    test('displays days for posts 24+ hours old', () => {
+      const post3DaysAgo = {
+        ...mockPost,
+        timestamp: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000)
+      };
+
+      render(<Post post={post3DaysAgo} />);
+      expect(screen.getByText('3d')).toBeInTheDocument();
+    });
+
+    test('displays "1d" for posts exactly 24 hours old', () => {
+      const post24HoursAgo = {
+        ...mockPost,
+        timestamp: new Date(Date.now() - 24 * 60 * 60 * 1000)
+      };
+
+      render(<Post post={post24HoursAgo} />);
+      expect(screen.getByText('1d')).toBeInTheDocument();
+    });
+  });
+
+  describe('action buttons rendering', () => {
+    test('renders Reply button', () => {
+      render(<Post post={mockPost} />);
+      
+      const replyButton = screen.getByText('5').closest('button');
+      expect(replyButton).toBeInTheDocument();
+      expect(replyButton).toHaveClass('hover:text-blue-500');
+    });
+
+    test('renders Share button', () => {
+      render(<Post post={mockPost} />);
+      
+      const buttons = screen.getAllByRole('button');
+      const shareButton = buttons[buttons.length - 1];
+      expect(shareButton).toBeInTheDocument();
+      expect(shareButton).toHaveClass('hover:text-blue-500');
+    });
+  });
+
+  describe('edge cases', () => {
+    test('displays zero counts correctly', () => {
+      const postWithZeros = {
+        ...mockPost,
+        likes: 0,
+        retweets: 0,
+        replies: 0
+      };
+
+      render(<Post post={postWithZeros} />);
+      
+      const zeroElements = screen.getAllByText('0');
+      expect(zeroElements.length).toBe(3);
+    });
+
+    test('displays large numbers correctly', () => {
+      const postWithLargeNumbers = {
+        ...mockPost,
+        likes: 9999,
+        retweets: 1234,
+        replies: 567
+      };
+
+      render(<Post post={postWithLargeNumbers} />);
+      
+      expect(screen.getByText('9999')).toBeInTheDocument();
+      expect(screen.getByText('1234')).toBeInTheDocument();
+      expect(screen.getByText('567')).toBeInTheDocument();
+    });
+  });
+
 });
